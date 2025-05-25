@@ -39,6 +39,8 @@ final-project/
 
 ```bash
 git clone https://github.com/minh20051202/PT_2024.2
+
+cd PT_2024.2
 ```
 
 3. Cài đặt các thư viện cần thiết:
