@@ -10,39 +10,55 @@ Hệ thống Quản lý Hóa đơn là ứng dụng giúp quản lý sản phẩ
 - **Nhập/Xuất dữ liệu**: Hỗ trợ nhập/xuất dữ liệu dưới dạng CSV
 - **Giao diện thân thiện**: Hỗ trợ cả giao diện đồ họa (GUI) và giao diện dòng lệnh (CLI)
 
+## Cấu trúc dự án
+
+```
+final-project/
+│
+├── sample_data/         # Dữ liệu mẫu để kiểm thử
+├── src/                 # Mã nguồn
+│   ├── core/            # Logic nghiệp vụ cốt lõi
+│   ├── data/            # Các module xử lý dữ liệu
+│   ├── invoicemanager/  # Module ứng dụng chính
+│   │   └── data/        # Dữ liệu quản lý hóa đơn
+│   ├── models/          # Các mô hình dữ liệu
+│   ├── ui/              # Giao diện người dùng
+│   │   ├── cli/         # Giao diện dòng lệnh
+│   │   └── gui/         # Giao diện đồ họa
+│   └── utils/           # Các hàm tiện ích
+├── tests/               # Bộ kiểm thử
+│   ├── integration/     # Kiểm thử tích hợp
+│   └── unit/            # Kiểm thử đơn vị
+└── pyproject.toml       # Cấu hình dự án
+```
+
 ## Cài đặt
 
 1. Đảm bảo bạn đã cài đặt Python 3.8 hoặc cao hơn
 2. Tải mã nguồn về máy
-3. Cài đặt các thư viện cần thiết (nếu cần)
+
+```bash
+git clone https://github.com/minh20051202/PT_2024.2
+```
+
+3. Cài đặt các thư viện cần thiết:
+
+```bash
+pip install [TÊN_THƯ_VIỆN]
+```
 
 ## Sử dụng
 
-### Khởi động nhanh
+### Chạy chương trình
 
-Cách đơn giản nhất để chạy ứng dụng là sử dụng file `runapp.py`:
-
-```bash
-python runapp.py
-```
-
-Hoặc làm cho file có quyền thực thi và chạy trực tiếp:
+Cách đơn giản nhất để chạy chương trình là sử dụng file `src/main.py`:
 
 ```bash
-chmod +x runapp.py
-./runapp.py
-```
+# Chạy giao diện đồ họa (GUI) -> mặc định
+python src/main.py --gui
 
-### Chạy từ thư mục nguồn
-
-Bạn cũng có thể chạy từ thư mục nguồn, có thể chọn giao diện GUI hoặc CLI:
-
-```bash
-# Chạy giao diện đồ họa (mặc định)
-python src/invoicemanager/main.py --gui
-
-# Chạy giao diện dòng lệnh
-python src/invoicemanager/main.py --cli
+# Chạy giao diện dòng lệnh (CLI)
+python src/main.py --cli
 ```
 
 ## Hướng dẫn sử dụng
@@ -67,17 +83,3 @@ python src/invoicemanager/main.py --cli
 - Xem danh sách sản phẩm bán chạy nhất
 - Xem danh sách phân loại sản phẩm theo danh mục
 - Xem danh sách khách hàng tiềm năng
-
-## Giải quyết sự cố
-
-Nếu bạn gặp lỗi khi chạy ứng dụng, vui lòng thử các giải pháp sau:
-
-1. Đảm bảo đã cài đặt Python 3.8 hoặc cao hơn
-2. Kiểm tra xem các thư viện cần thiết đã được cài đặt chưa
-3. Thử chạy file `runapp.py` ở thư mục gốc
-4. Nếu GUI không hoạt động, thử chạy ở chế độ CLI với lệnh `python src/invoicemanager/main.py --cli`
-
-## Liên hệ hỗ trợ
-
-Nếu bạn có bất kỳ câu hỏi hoặc đề xuất nào, vui lòng liên hệ qua email hoặc tạo issue trên trang dự án.
-# PT_2024.2

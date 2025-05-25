@@ -1,0 +1,10 @@
+invoice_id,date,customer_name,product_id,quantity,unit_price
+HĐ001,2023-10-01,Nguyễn Thị Hương,P001,1,1200.50
+HĐ001,2023-10-01,Nguyễn Thị Hương,P002,2,25.99
+HĐ002,2023-10-05,Trần Văn Nam,P003,1,45.00
+HĐ002,2023-10-05,Trần Văn Nam,P005,3,15.00
+HĐ003,2023-10-15,Lê Minh Trí,P001,1,1200.50
+HĐ003,2023-10-15,Lê Minh Trí,P004,1,150.75
+HĐ003,2023-10-15,Lê Minh Trí,P006,5,3.50
+HĐ004,2023-10-20,Nguyễn Thị Hương,P002,1,25.99
+HĐ004,2023-10-20,Nguyễn Thị Hương,P005,2,15.00
