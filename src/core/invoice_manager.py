@@ -1,167 +1,179 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Quản lý hóa đơn cho Hệ thống Quản lý Hóa đơn.
+Quản lý hóa đơn cho Hệ thống Quản lý Hóa đơn, sử dụng SQLite.
 """
+import sqlite3
+from datetime import datetime
+from typing import List, Optional, Dict, Any
 
-from typing import List, Dict, Any, Optional
-from models import Invoice, InvoiceItem, Product
-from .file_manager import FileManager
+from models import Invoice, InvoiceItem
+from database.database import DATABASE_PATH
 from .product_manager import ProductManager
-from utils import validate_required_field
 
 class InvoiceManager:
     """
-    Quản lý các thao tác với hóa đơn trong Hệ thống Quản lý Hóa đơn.
-    
-    Lớp này xử lý các thao tác như tạo, xem và liệt kê hóa đơn.
-    Sử dụng FileManager để lưu trữ dữ liệu và ProductManager để lấy thông tin sản phẩm.
+    Quản lý các thao tác với hóa đơn, kết nối trực tiếp với database SQLite.
     """
     
     def __init__(self, product_manager: ProductManager):
-        """
-        Khởi tạo với danh sách hóa đơn trống và tải hóa đơn từ bộ nhớ.
-        
-        Tham số:
-            product_manager: Một thực thể của ProductManager để tra cứu sản phẩm
-        """
-        self.file_manager = FileManager()
+        """Khởi tạo và tải hóa đơn từ database."""
+        self.db_path = DATABASE_PATH
         self.product_manager = product_manager
         self.invoices: List[Invoice] = []
         self.load_invoices()
-    
-    def load_invoices(self) -> None:
-        """Tải hóa đơn từ bộ nhớ."""
-        self.invoices = self.file_manager.load_invoices()
-    
-    def save_invoices(self) -> None:
-        """Lưu hóa đơn vào bộ nhớ."""
-        self.file_manager.save_invoices(self.invoices)
-    
-    def create_invoice(self, invoice_id: str, customer_name: str, items_data: List[Dict[str, Any]]) -> bool:
-        """
-        Tạo một hóa đơn mới.
         
-        Tham số:
-            invoice_id: Mã định danh duy nhất cho hóa đơn
-            customer_name: Tên khách hàng
-            items_data: Danh sách các từ điển với khóa 'product_id' và 'quantity'
-            
-        Trả về:
-            True nếu thành công, False nếu không
+    def _get_connection(self):
+        """Tạo và trả về một kết nối đến database."""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def load_invoices(self) -> None:
+        """Tải tất cả hóa đơn và các mục chi tiết từ database."""
+        self.invoices = []
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Lấy tất cả hóa đơn
+                cursor.execute("SELECT id, customer_name, date FROM invoices ORDER BY id;")
+                invoice_rows = cursor.fetchall()
+
+                for inv_row in invoice_rows:
+                    invoice_id = inv_row['id']
+                    
+                    # Lấy tất cả các mục cho hóa đơn hiện tại
+                    cursor.execute("""
+                        SELECT product_id, quantity, unit_price
+                        FROM invoice_items
+                        WHERE invoice_id = ?
+                    """, (invoice_id,))
+                    item_rows = cursor.fetchall()
+                    
+                    items = [InvoiceItem(**dict(row)) for row in item_rows]
+                    
+                    # Tạo đối tượng Invoice
+                    # Chuyển đổi invoice_id (int) sang str để phù hợp với model
+                    invoice = Invoice(
+                        invoice_id=str(invoice_id), 
+                        customer_name=inv_row['customer_name'],
+                        date=inv_row['date'],
+                        items=items
+                    )
+                    self.invoices.append(invoice)
+            print(f"Đã tải {len(self.invoices)} hóa đơn từ database.")
+        except sqlite3.Error as e:
+            print(f"Lỗi khi tải hóa đơn từ database: {e}")
+
+    def create_invoice(self, customer_name: str, items_data: List[Dict[str, Any]], date: Optional[str] = None) -> Optional[Invoice]:
         """
-        # Validate inputs
-        if not validate_required_field(invoice_id, "Mã hóa đơn"):
-            return False
-        if not validate_required_field(customer_name, "Tên khách hàng"):
-            return False
+        Tạo một hóa đơn mới trong database.
+        Lưu ý: invoice_id sẽ được database tự động tạo.
+        """
+        if not customer_name:
+            print("Lỗi: Tên khách hàng là bắt buộc.")
+            return None
         if not items_data:
             print("Lỗi: Hóa đơn phải có ít nhất một mặt hàng.")
-            return False
+            return None
         
-        # Check if invoice with this ID already exists
-        if any(invoice.invoice_id == invoice_id for invoice in self.invoices):
-            print(f"Hóa đơn với Mã '{invoice_id}' đã tồn tại!")
-            return False
+        invoice_date = date if date else datetime.now().strftime('%Y-%m-%d')
         
-        # Create invoice items
-        invoice_items = []
-        for item_data in items_data:
-            product_id = item_data['product_id']
-            quantity = item_data['quantity']
-            
-            # Find product to get unit price
-            product = self.product_manager.find_product(product_id)
-            if not product:
-                print(f"Không tìm thấy sản phẩm với Mã '{product_id}'!")
-                return False
-            
-            # Create invoice item
-            invoice_item = InvoiceItem(
-                product_id=product_id,
-                quantity=quantity,
-                unit_price=product.unit_price
-            )
-            invoice_items.append(invoice_item)
-        
-        # Create invoice
-        invoice = Invoice(
-            invoice_id=invoice_id,
-            customer_name=customer_name,
-            items=invoice_items
-        )
-        
-        # Add to list and save
-        self.invoices.append(invoice)
-        self.save_invoices()
-        print(f"Đã tạo hóa đơn '{invoice_id}' thành công!")
-        return True
-    
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Bắt đầu một transaction
+                cursor.execute("BEGIN TRANSACTION;")
+                
+                # 1. Thêm vào bảng invoices
+                cursor.execute(
+                    "INSERT INTO invoices (customer_name, date) VALUES (?, ?)",
+                    (customer_name, invoice_date)
+                )
+                new_invoice_id = cursor.lastrowid  # Lấy ID tự động tăng
+
+                # 2. Thêm các mục vào bảng invoice_items
+                for item_data in items_data:
+                    product = self.product_manager.find_product(item_data['product_id'])
+                    if not product:
+                        # Nếu một sản phẩm không tồn tại, hủy toàn bộ transaction
+                        raise ValueError(f"Sản phẩm với ID {item_data['product_id']} không tồn tại.")
+                    
+                    cursor.execute(
+                        """
+                        INSERT INTO invoice_items (invoice_id, product_id, quantity, unit_price)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (new_invoice_id, item_data['product_id'], item_data['quantity'], product.unit_price)
+                    )
+                
+                # Hoàn tất transaction
+                conn.commit()
+
+                # Tải lại danh sách để cập nhật
+                self.load_invoices()
+                
+                new_invoice = self.find_invoice(str(new_invoice_id))
+                if new_invoice:
+                    print(f"Đã tạo thành công hóa đơn #{new_invoice.invoice_id} cho khách hàng '{customer_name}'.")
+                    return new_invoice
+                return None
+
+        except (sqlite3.Error, ValueError) as e:
+            print(f"Lỗi database khi tạo hóa đơn: {e}")
+            # Hủy transaction nếu có lỗi
+            if conn:
+                conn.rollback()
+            return None
+
     def find_invoice(self, invoice_id: str) -> Optional[Invoice]:
-        """
-        Tìm kiếm hóa đơn theo ID.
-        
-        Tham số:
-            invoice_id: Mã hóa đơn cần tìm
-            
-        Trả về:
-            Đối tượng hóa đơn nếu tìm thấy, None nếu không
-        """
+        """Tìm một hóa đơn theo ID trong danh sách đã tải."""
         for invoice in self.invoices:
             if invoice.invoice_id == invoice_id:
                 return invoice
         return None
     
-    def view_invoice_detail(self, invoice_id: str) -> bool:
-        """
-        Hiển thị chi tiết của một hóa đơn.
-        
-        Tham số:
-            invoice_id: Mã hóa đơn cần xem
-            
-        Trả về:
-            True nếu hóa đơn được tìm thấy và hiển thị, False nếu không
-        """
+    def view_invoice_detail(self, invoice_id: str) -> None:
+        """Hiển thị chi tiết hóa đơn (dùng cho CLI)."""
         invoice = self.find_invoice(invoice_id)
         if not invoice:
-            print(f"Không tìm thấy hóa đơn với Mã '{invoice_id}'!")
-            return False
-        
+            print(f"Không tìm thấy hóa đơn với Mã '{invoice_id}'.")
+            return
+
         print("\n" + "="*80)
-        print(f"CHI TIẾT HÓA ĐƠN - {invoice_id}")
+        print(f"CHI TIẾT HÓA ĐƠN #{invoice.invoice_id}")
+        print(f"Khách hàng: {invoice.customer_name}")
+        print(f"Ngày: {invoice.date}")
         print("="*80)
-        print(f"Mã hóa đơn:    {invoice.invoice_id}")
-        print(f"Ngày:          {invoice.date}")
-        print(f"Khách hàng:    {invoice.customer_name}")
+        print(f"{'MÃ SP':<10} {'TÊN SẢN PHẨM':<30} {'SL':>5} {'ĐƠN GIÁ':>15} {'THÀNH TIỀN':>15}")
         print("-"*80)
-        
-        print(f"{'STT':<5} {'MÃ SP':<10} {'TÊN SẢN PHẨM':<30} {'SỐ LƯỢNG':<10} {'ĐƠN GIÁ':<15} {'THÀNH TIỀN':<15}")
-        print("-"*80)
-        
-        for idx, item in enumerate(invoice.items, 1):
+
+        for item in invoice.items:
             product = self.product_manager.find_product(item.product_id)
-            product_name = product.name if product else "[Sản phẩm không tồn tại]"
-            print(f"{idx:<5} {item.product_id:<10} {product_name:<30} {item.quantity:<10} "
-                  f"{item.unit_price:>15,.2f} {item.total_price:>15,.2f}")
+            product_name = product.name if product else "[Sản phẩm đã bị xóa]"
+            total_price = item.quantity * item.unit_price
+            print(f"{item.product_id:<10} {product_name:<30} {item.quantity:>5} "
+                  f"{item.unit_price:>15,.2f} {total_price:>15,.2f}")
         
         print("-"*80)
-        print(f"{'TỔNG CỘNG:':<60} {invoice.total_amount:>15,.2f}")
+        print(f"{'TỔNG CỘNG:':<64} {invoice.total_amount:>15,.2f}")
         print("="*80)
-        return True
-    
+
     def list_invoices(self) -> None:
-        """Hiển thị danh sách hóa đơn."""
+        """Hiển thị danh sách hóa đơn (dùng cho CLI)."""
         if not self.invoices:
             print("Danh sách hóa đơn trống!")
             return
         
         print("\n" + "="*80)
-        print(f"{'MÃ HĐ':<10} {'NGÀY':<12} {'KHÁCH HÀNG':<25} {'SỐ MẶT HÀNG':<15} {'TỔNG TIỀN':<15}")
+        print(f"{'MÃ HĐ':<10} {'KHÁCH HÀNG':<30} {'NGÀY':<15} {'SỐ MẶT HÀNG':>15} {'TỔNG TIỀN':>15}")
         print("-"*80)
         
         for invoice in self.invoices:
-            print(f"{invoice.invoice_id:<10} {invoice.date:<12} {invoice.customer_name:<25} "
-                  f"{len(invoice.items):<15} {invoice.total_amount:>15,.2f}")
+            print(f"#{invoice.invoice_id:<9} {invoice.customer_name:<30} {invoice.date:<15} "
+                  f"{invoice.total_items:>15} {invoice.total_amount:>15,.2f}")
         
         print("="*80)
         print(f"Tổng số: {len(self.invoices)} hóa đơn")

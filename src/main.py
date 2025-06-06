@@ -4,8 +4,8 @@
 Điểm vào chính cho Hệ thống Quản lý Hóa đơn.
 """
 import argparse
-from ui.gui.app_gui import start_gui
-from ui.cli.app_cli import start_cli
+from ui.gui.gui import start_gui
+from ui.cli.cli import start_cli
 
 def show_usage():
     """Hiển thị thông tin sử dụng."""

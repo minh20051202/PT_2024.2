@@ -43,8 +43,8 @@ class TestProductManager(unittest.TestCase):
             product_id="P001",
             name="Sản phẩm thử nghiệm",
             unit_price=100.0,
-            category="Kiểm thử",
-            calculation_unit="đơn vị"
+            calculation_unit="đơn vị",
+            category="Kiểm thử"
         )
         
         # Kiểm tra kết quả
@@ -158,16 +158,16 @@ class TestProductManager(unittest.TestCase):
             product_id="P001",
             name="Sản phẩm mới",
             unit_price=200.0,
-            category="Danh mục mới",
-            calculation_unit="cái"
+            calculation_unit="cái",
+            category="Danh mục mới"
         )
         
         # Kiểm tra kết quả
         self.assertTrue(result)
         self.assertEqual(self.product_manager.products[0].name, "Sản phẩm mới")
         self.assertEqual(self.product_manager.products[0].unit_price, 200.0)
-        self.assertEqual(self.product_manager.products[0].category, "Danh mục mới")
         self.assertEqual(self.product_manager.products[0].calculation_unit, "cái")
+        self.assertEqual(self.product_manager.products[0].category, "Danh mục mới")
         
         # Kiểm tra thông báo
         self.assertIn("Đã cập nhật sản phẩm 'P001' thành công!", mock_stdout.getvalue())

@@ -23,16 +23,16 @@ class TestProductModel(unittest.TestCase):
             product_id="P001",
             name="Sản phẩm thử nghiệm",
             unit_price=100.0,
-            category="Kiểm thử",
-            calculation_unit="đơn vị"
+            calculation_unit="đơn vị",
+            category="Kiểm thử"
         )
         
         # Kiểm tra các thuộc tính
         self.assertEqual(product.product_id, "P001")
         self.assertEqual(product.name, "Sản phẩm thử nghiệm")
         self.assertEqual(product.unit_price, 100.0)
-        self.assertEqual(product.category, "Kiểm thử")
         self.assertEqual(product.calculation_unit, "đơn vị")
+        self.assertEqual(product.category, "Kiểm thử")
     
     def test_product_creation_with_defaults(self):
         """Kiểm tra tạo Product với giá trị mặc định."""
@@ -47,8 +47,8 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(product.product_id, "P002")
         self.assertEqual(product.name, "Sản phẩm thử nghiệm 2")
         self.assertEqual(product.unit_price, 200.0)
-        self.assertEqual(product.category, "General")  # Giá trị mặc định
         self.assertEqual(product.calculation_unit, "đơn vị")  # Giá trị mặc định
+        self.assertEqual(product.category, "General")  # Giá trị mặc định
     
     def test_product_empty_id(self):
         """Kiểm tra validation khi product_id rỗng."""

@@ -104,11 +104,11 @@ class InvoiceManagementSystem:
                         print("Đơn giá không được âm. Vui lòng nhập lại.")
                         continue
                     break
-                category_input = self.get_input("Danh mục (tùy chọn, mặc định: General): ", required=False)
-                category = category_input if category_input else "General"
                 calculation_unit_input = self.get_input("Đơn vị tính (tùy chọn, mặc định: đơn vị): ", required=False)
                 calculation_unit = calculation_unit_input if calculation_unit_input else "đơn vị"
-                self.product_manager.add_product(product_id, name, unit_price, category, calculation_unit)
+                category_input = self.get_input("Danh mục (tùy chọn, mặc định: General): ", required=False)
+                category = category_input if category_input else "General"
+                self.product_manager.add_product(product_id, name, unit_price, calculation_unit, category)
             
             elif choice == 2:  # Cập nhật sản phẩm
                 print("\n--- CẬP NHẬT SẢN PHẨM ---")
@@ -135,9 +135,9 @@ class InvoiceManagementSystem:
                         print("Đầu vào không hợp lệ! Vui lòng nhập một số hợp lệ.")
                         continue
 
-                category = self.get_input("Danh mục mới: ", required=False) or None
                 calculation_unit = self.get_input("Đơn vị tính mới: ", required=False) or None
-                self.product_manager.update_product(product_id, name, unit_price, category, calculation_unit)
+                category = self.get_input("Danh mục mới: ", required=False) or None
+                self.product_manager.update_product(product_id, name, unit_price, calculation_unit, category)
             
             elif choice == 3:  # Xóa sản phẩm
                 print("\n--- XÓA SẢN PHẨM ---")

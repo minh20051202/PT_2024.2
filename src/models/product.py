@@ -21,8 +21,8 @@ class Product:
     product_id: str
     name: str
     unit_price: float
-    category: str = field(default="General")
     calculation_unit: str = field(default="đơn vị")
+    category: str = field(default="General")
     
     def __post_init__(self):
         """Xác thực dữ liệu sản phẩm."""
