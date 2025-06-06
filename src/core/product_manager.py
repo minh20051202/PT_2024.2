@@ -3,11 +3,17 @@
 """
 Quản lý sản phẩm cho Hệ thống Quản lý Hóa đơn, sử dụng SQLite.
 """
-import sqlite3
 from typing import List, Optional
 
 from models import Product
-from database.database import DATABASE_PATH
+from utils.db_utils import load_data, save_data, update_data, delete_data
+from utils.validation import (
+    validate_required_field,
+    validate_positive_number,
+    validate_product_id,
+    validate_string_length
+)
+from utils.formatting import format_product_id
 
 class ProductManager:
     """
@@ -16,62 +22,54 @@ class ProductManager:
     
     def __init__(self):
         """Khởi tạo và tải danh sách sản phẩm từ database."""
-        self.db_path = DATABASE_PATH
         self.products: List[Product] = []
         self.load_products()
     
-    def _get_connection(self):
-        """Tạo và trả về một kết nối đến database."""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row  # Trả về kết quả dạng dict-like
-        return conn
-
     def load_products(self) -> None:
         """Tải tất cả sản phẩm từ database vào danh sách self.products."""
         self.products = []
-        try:
-            with self._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM products ORDER BY name;")
-                rows = cursor.fetchall()
-                for row in rows:
-                    self.products.append(Product(**dict(row)))
+        rows = load_data("products")
+        if rows:
+            self.products = [Product(**row) for row in rows]
             print(f"Đã tải {len(self.products)} sản phẩm từ database.")
-        except sqlite3.Error as e:
-            print(f"Lỗi khi tải sản phẩm từ database: {e}")
 
     def add_product(self, product_id: str, name: str, unit_price: float, 
                    calculation_unit: str = "đơn vị", category: str = "General") -> bool:
         """Thêm một sản phẩm mới vào database."""
-        if not product_id or not name:
-            print("Lỗi: Mã sản phẩm và tên là bắt buộc.")
+        # Validate input
+        if not validate_product_id(product_id):
             return False
-        if unit_price < 0:
-            print("Lỗi: Đơn giá không được âm.")
+        if not validate_required_field(name, "Tên sản phẩm"):
+            return False
+        if not validate_string_length(name, "Tên sản phẩm", 2, 50):
+            return False
+        if not validate_positive_number(unit_price, "Đơn giá"):
             return False
         if self.find_product(product_id):
             print(f"Sản phẩm với Mã '{product_id}' đã tồn tại!")
             return False
 
-        try:
-            with self._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO products (product_id, name, unit_price, calculation_unit, category)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (product_id, name, unit_price, calculation_unit, category))
-                conn.commit()
-            
-            # Tải lại danh sách sau khi thêm
+        # Format input
+        product_id = format_product_id(product_id)
+        
+        # Add to database
+        success = save_data("products", {
+            "product_id": product_id,
+            "name": name,
+            "unit_price": unit_price,
+            "calculation_unit": calculation_unit,
+            "category": category
+        })
+        
+        if success:
             self.load_products()
             print(f"Đã thêm sản phẩm '{name}' thành công!")
             return True
-        except sqlite3.Error as e:
-            print(f"Lỗi database khi thêm sản phẩm: {e}")
-            return False
+        return False
     
     def find_product(self, product_id: str) -> Optional[Product]:
         """Tìm kiếm sản phẩm theo ID trong danh sách đã tải."""
+        product_id = format_product_id(product_id)
         for product in self.products:
             if product.product_id == product_id:
                 return product
@@ -81,71 +79,58 @@ class ProductManager:
                       unit_price: Optional[float] = None, calculation_unit: Optional[str] = None, 
                       category: Optional[str] = None) -> bool:
         """Cập nhật thông tin sản phẩm trong database."""
-        product = self.find_product(product_id)
-        if not product:
-            print(f"Không tìm thấy sản phẩm với Mã '{product_id}'!")
-            return False
-        
-        # Tạo câu lệnh UPDATE động
-        fields_to_update = []
-        params = []
-        if name is not None:
-            fields_to_update.append("name = ?")
-            params.append(name)
-        if unit_price is not None:
-            if unit_price < 0:
-                print("Lỗi: Đơn giá không được âm.")
-                return False
-            fields_to_update.append("unit_price = ?")
-            params.append(unit_price)
-        if calculation_unit is not None:
-            fields_to_update.append("calculation_unit = ?")
-            params.append(calculation_unit)
-        if category is not None:
-            fields_to_update.append("category = ?")
-            params.append(category)
-
-        if not fields_to_update:
-            print("Không có thông tin nào được cung cấp để cập nhật.")
-            return True
-
-        # Thêm product_id vào cuối params cho mệnh đề WHERE
-        params.append(product_id)
-        
-        try:
-            with self._get_connection() as conn:
-                cursor = conn.cursor()
-                sql = f"UPDATE products SET {', '.join(fields_to_update)} WHERE product_id = ?"
-                cursor.execute(sql, tuple(params))
-                conn.commit()
-
-            # Tải lại danh sách sau khi cập nhật
-            self.load_products()
-            print(f"Đã cập nhật sản phẩm '{product_id}' thành công!")
-            return True
-        except sqlite3.Error as e:
-            print(f"Lỗi database khi cập nhật sản phẩm: {e}")
-            return False
-
-    def delete_product(self, product_id: str) -> bool:
-        """Xóa sản phẩm khỏi database."""
+        product_id = format_product_id(product_id)
         if not self.find_product(product_id):
             print(f"Không tìm thấy sản phẩm với Mã '{product_id}'!")
             return False
         
-        try:
-            with self._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM products WHERE product_id = ?", (product_id,))
-                conn.commit()
+        # Validate updates
+        if name is not None and not validate_string_length(name, "Tên sản phẩm", 2, 50):
+            return False
+        if unit_price is not None and not validate_positive_number(unit_price, "Đơn giá"):
+            return False
+        
+        # Build update data
+        update_data_dict = {}
+        if name is not None:
+            update_data_dict["name"] = name
+        if unit_price is not None:
+            update_data_dict["unit_price"] = unit_price
+        if calculation_unit is not None:
+            update_data_dict["calculation_unit"] = calculation_unit
+        if category is not None:
+            update_data_dict["category"] = category
 
-            # Tải lại danh sách sau khi xóa
+        if not update_data_dict:
+            print("Không có thông tin nào được cung cấp để cập nhật.")
+            return True
+
+        success = update_data(
+            "products",
+            update_data_dict,
+            {"product_id": product_id}
+        )
+        
+        if success:
+            self.load_products()
+            print(f"Đã cập nhật sản phẩm '{product_id}' thành công!")
+            return True
+        return False
+
+    def delete_product(self, product_id: str) -> bool:
+        """Xóa sản phẩm khỏi database."""
+        product_id = format_product_id(product_id)
+        if not self.find_product(product_id):
+            print(f"Không tìm thấy sản phẩm với Mã '{product_id}'!")
+            return False
+        
+        success = delete_data("products", {"product_id": product_id})
+        
+        if success:
             self.load_products()
             print(f"Đã xóa sản phẩm '{product_id}' thành công!")
             return True
-        except sqlite3.Error as e:
-            print(f"Lỗi database khi xóa sản phẩm: {e}")
-            return False
+        return False
     
     def list_products(self) -> None:
         """Hiển thị danh sách sản phẩm (dùng cho CLI)."""
