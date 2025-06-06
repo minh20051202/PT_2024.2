@@ -3,7 +3,7 @@
 """
 Điểm vào chính cho Hệ thống Quản lý Hóa đơn.
 """
-from ui.gui.gui import start_gui
+from gui.gui import start_gui
 
 def main():
     start_gui()
