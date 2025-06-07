@@ -14,6 +14,7 @@ from utils.validation import (
     validate_quantity
 )
 from utils.formatting import format_date, format_customer_name
+from database.database import initialize_database
 from .product_manager import ProductManager
 
 class InvoiceManager:
@@ -25,23 +26,29 @@ class InvoiceManager:
         """Khởi tạo và tải hóa đơn từ database."""
         self.product_manager = product_manager
         self.invoices: List[Invoice] = []
+        # Khởi tạo database nếu chưa tồn tại
+        initialize_database()
         self.load_invoices()
 
-    def load_invoices(self) -> None:
+    def load_invoices(self) -> tuple[bool, str]:
         """Tải tất cả hóa đơn và các mục chi tiết từ database."""
         self.invoices = []
-        
+
         # Load invoices
-        invoice_rows = load_data("invoices")
+        invoice_rows, error = load_data("invoices")
+        if error:
+            return False, error
         if not invoice_rows:
-            return
-            
+            return True, "Đã tải 0 hóa đơn từ database."
+
         for inv_row in invoice_rows:
             invoice_id = inv_row['id']
-            
+
             # Load invoice items
-            item_rows = load_data("invoice_items", {"invoice_id": invoice_id})
-            
+            item_rows, error = load_data("invoice_items", {"invoice_id": invoice_id})
+            if error:
+                return False, error
+
             items = [
                 InvoiceItem(
                     product_id=row['product_id'],
@@ -50,7 +57,7 @@ class InvoiceManager:
                 )
                 for row in item_rows
             ] if item_rows else []
-            
+
             # Create Invoice object
             invoice = Invoice(
                 invoice_id=str(invoice_id),
@@ -59,36 +66,40 @@ class InvoiceManager:
                 items=items
             )
             self.invoices.append(invoice)
-            
-        print(f"Đã tải {len(self.invoices)} hóa đơn từ database.")
 
-    def create_invoice(self, customer_name: str, items_data: List[Dict[str, Any]], date: Optional[str] = None) -> Optional[Invoice]:
+        return True, f"Đã tải {len(self.invoices)} hóa đơn từ database."
+
+    def create_invoice(self, customer_name: str, items_data: List[Dict[str, Any]], date: Optional[str] = None) -> tuple[Optional[Invoice], str]:
         """
         Tạo một hóa đơn mới trong database.
         Lưu ý: invoice_id sẽ được database tự động tạo.
+
+        Trả về:
+            tuple[Optional[Invoice], str]: (Invoice object nếu thành công, thông báo lỗi nếu có)
         """
         # Validate input
-        if not validate_required_field(customer_name, "Tên khách hàng"):
-            return None
+        valid, error = validate_required_field(customer_name, "Tên khách hàng")
+        if not valid:
+            return None, error
         if not items_data:
-            print("Lỗi: Hóa đơn phải có ít nhất một mặt hàng.")
-            return None
-            
+            return None, "Hóa đơn phải có ít nhất một mặt hàng."
+
         # Validate date format
         invoice_date = date if date else datetime.now().strftime('%Y-%m-%d')
-        if not validate_date_format(invoice_date, "Ngày hóa đơn"):
-            return None
+        valid, error = validate_date_format(invoice_date, "Ngày hóa đơn")
+        if not valid:
+            return None, error
             
         # Format input
         customer_name = format_customer_name(customer_name)
         
         # Validate items
         for item in items_data:
-            if not validate_quantity(item.get('quantity')):
-                return None
+            valid, error = validate_quantity(item.get('quantity'))
+            if not valid:
+                return None, error
             if not self.product_manager.find_product(item.get('product_id')):
-                print(f"Sản phẩm với ID {item.get('product_id')} không tồn tại.")
-                return None
+                return None, f"Sản phẩm với ID {item.get('product_id')} không tồn tại."
         
         # Insert invoice
         invoice_data = {
@@ -96,13 +107,16 @@ class InvoiceManager:
             "date": invoice_date
         }
         
-        if not save_data("invoices", invoice_data):
-            return None
-            
+        success, error = save_data("invoices", invoice_data)
+        if not success:
+            return None, error
+
         # Get the new invoice ID
-        new_invoice = load_data("invoices", {"customer_name": customer_name, "date": invoice_date})
+        new_invoice, error = load_data("invoices", {"customer_name": customer_name, "date": invoice_date})
+        if error:
+            return None, error
         if not new_invoice:
-            return None
+            return None, "Không thể tìm thấy hóa đơn vừa tạo."
             
         new_invoice_id = new_invoice[0]['id']
         
@@ -115,15 +129,15 @@ class InvoiceManager:
                 "quantity": item_data['quantity'],
                 "unit_price": product.unit_price
             }
-            if not save_data("invoice_items", item_data):
-                return None
-        
+            success, error = save_data("invoice_items", item_data)
+            if not success:
+                return None, error
+
         self.load_invoices()
         new_invoice = self.find_invoice(str(new_invoice_id))
         if new_invoice:
-            print(f"Đã tạo thành công hóa đơn #{new_invoice.invoice_id} cho khách hàng '{customer_name}'.")
-            return new_invoice
-        return None
+            return new_invoice, f"Đã tạo thành công hóa đơn #{new_invoice.invoice_id} cho khách hàng '{customer_name}'."
+        return None, "Không thể tạo hóa đơn."
 
     def find_invoice(self, invoice_id: str) -> Optional[Invoice]:
         """Tìm một hóa đơn theo ID trong danh sách đã tải."""

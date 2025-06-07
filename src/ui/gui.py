@@ -78,11 +78,15 @@ class InvoiceAppGUI:
     def load_products(self):
         """Tải lại danh sách sản phẩm từ manager và cập nhật Treeview."""
         try:
-            self.product_manager.load_products()
+            success, message = self.product_manager.load_products()
+            if not success:
+                messagebox.showerror("Lỗi", f"Không thể tải danh sách sản phẩm: {message}")
+                return
+
             # Xóa dữ liệu cũ
             for item in self.product_tree.get_children():
                 self.product_tree.delete(item)
-            
+
             # Hiển thị dữ liệu mới
             for product in self.product_manager.products:
                 self.product_tree.insert("", "end", values=(
@@ -121,16 +125,19 @@ class InvoiceAppGUI:
                 price_str = entries["Đơn giá"].get().strip()
                 price = float(price_str) if price_str else 0.0
 
-                result = self.product_manager.add_product(
+                success, message = self.product_manager.add_product(
                     product_id=entries["Mã sản phẩm"].get().strip(),
                     name=entries["Tên sản phẩm"].get().strip(),
                     unit_price=price,
                     calculation_unit=entries["Đơn vị tính"].get().strip(),
                     category=entries["Danh mục"].get().strip()
                 )
-                if result:
+                if success:
+                    messagebox.showinfo("Thành công", message)
                     self.load_products()
                     dialog.destroy()
+                else:
+                    messagebox.showerror("Lỗi", message)
             except ValueError:
                 messagebox.showerror("Lỗi", "Đơn giá phải là một con số.")
             except Exception as e:
@@ -177,16 +184,19 @@ class InvoiceAppGUI:
                 price_str = entries["Đơn giá"].get().strip()
                 price = float(price_str) if price_str else product.unit_price
 
-                result = self.product_manager.update_product(
+                success, message = self.product_manager.update_product(
                     product_id=product_id,
                     name=entries["Tên sản phẩm"].get().strip(),
                     unit_price=price,
                     calculation_unit=entries["Đơn vị tính"].get().strip(),
                     category=entries["Danh mục"].get().strip()
                 )
-                if result:
+                if success:
+                    messagebox.showinfo("Thành công", message)
                     self.load_products()
                     dialog.destroy()
+                else:
+                    messagebox.showerror("Lỗi", message)
             except ValueError:
                 messagebox.showerror("Lỗi", "Đơn giá phải là một con số.")
             except Exception as e:
@@ -207,10 +217,12 @@ class InvoiceAppGUI:
         
         if messagebox.askyesno("Xác nhận", f"Bạn có chắc chắn muốn xóa sản phẩm '{product_id}'? Hành động này không thể hoàn tác."):
             try:
-                if self.product_manager.delete_product(product_id):
+                success, message = self.product_manager.delete_product(product_id)
+                if success:
+                    messagebox.showinfo("Thành công", message)
                     self.load_products()
                 else:
-                    messagebox.showerror("Lỗi", f"Không thể xóa sản phẩm {product_id}.")
+                    messagebox.showerror("Lỗi", message)
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể xóa sản phẩm: {str(e)}")
 
@@ -243,10 +255,14 @@ class InvoiceAppGUI:
     def load_invoices(self):
         """Tải lại danh sách hóa đơn từ manager và cập nhật Treeview."""
         try:
-            self.invoice_manager.load_invoices()
+            success, message = self.invoice_manager.load_invoices()
+            if not success:
+                messagebox.showerror("Lỗi", f"Không thể tải danh sách hóa đơn: {message}")
+                return
+
             for item in self.invoice_tree.get_children():
                 self.invoice_tree.delete(item)
-            
+
             for invoice in self.invoice_manager.invoices:
                 self.invoice_tree.insert("", "end", values=(
                     invoice.invoice_id,
@@ -418,12 +434,13 @@ class InvoiceAppGUI:
                 return
             
             try:
-                new_invoice = self.invoice_manager.create_invoice(customer_name=customer_name, items_data=current_items)
+                new_invoice, message = self.invoice_manager.create_invoice(customer_name=customer_name, items_data=current_items)
                 if new_invoice:
+                    messagebox.showinfo("Thành công", message)
                     self.load_invoices()
                     dialog.destroy()
                 else:
-                    messagebox.showerror("Lỗi", "Không thể tạo hóa đơn.")
+                    messagebox.showerror("Lỗi", message)
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể tạo hóa đơn: {str(e)}")
 
@@ -541,14 +558,10 @@ class InvoiceAppGUI:
             self.revenue_result.config(state="disabled")
             
             if not output.strip():
-                print("Cảnh báo: Output trống!")
-            
+                messagebox.showwarning("Cảnh báo", "Không có dữ liệu để hiển thị!")
+
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê doanh thu theo sản phẩm: {str(e)}")
-            # In thông tin lỗi chi tiết
-            import traceback
-            print(f"Chi tiết lỗi thống kê doanh thu: {str(e)}")
-            print(traceback.format_exc())
 
     def show_revenue_by_time(self):
         try:
@@ -587,14 +600,10 @@ class InvoiceAppGUI:
             self.revenue_result.config(state="disabled")
             
             if not output.strip():
-                print("Cảnh báo: Output trống!")
-                
+                messagebox.showwarning("Cảnh báo", "Không có dữ liệu để hiển thị!")
+
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê doanh thu theo thời gian: {str(e)}")
-            # In thông tin lỗi chi tiết
-            import traceback
-            print(f"Chi tiết lỗi thống kê doanh thu theo thời gian: {str(e)}")
-            print(traceback.format_exc())
 
     def show_top_products(self):
         try:
@@ -662,10 +671,6 @@ class InvoiceAppGUI:
             
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê sản phẩm bán chạy: {str(e)}")
-            # In thông tin lỗi chi tiết
-            import traceback
-            print(f"Chi tiết lỗi thống kê sản phẩm bán chạy: {str(e)}")
-            print(traceback.format_exc())
 
     def show_product_categories(self):
         try:
@@ -766,10 +771,6 @@ class InvoiceAppGUI:
                 
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê khách hàng tiềm năng: {str(e)}")
-            # In thông tin lỗi chi tiết
-            import traceback
-            print(f"Chi tiết lỗi thống kê khách hàng tiềm năng: {str(e)}")
-            print(traceback.format_exc())
 
 def start_gui():
     """Hàm khởi động giao diện đồ họa"""
@@ -778,7 +779,6 @@ def start_gui():
         app = InvoiceAppGUI(root)
         root.mainloop()
     except Exception as e:
-        print(f"Lỗi nghiêm trọng khi khởi động GUI: {str(e)}")
         # Hiển thị lỗi trong một cửa sổ Tkinter đơn giản nếu có thể
         try:
             error_root = tk.Tk()
@@ -789,5 +789,5 @@ def start_gui():
             ttk.Button(error_root, text="Đóng", command=error_root.destroy).pack(pady=10)
             error_root.mainloop()
         except tk.TclError:
-            # Nếu ngay cả cửa sổ lỗi cũng không hiển thị được
+            # Nếu ngay cả cửa sổ lỗi cũng không hiển thị được, không làm gì
             pass

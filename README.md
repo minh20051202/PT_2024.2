@@ -7,47 +7,67 @@ Hệ thống Quản lý Hóa đơn là ứng dụng giúp quản lý sản phẩ
 - **Quản lý Sản phẩm**: Thêm, sửa, xóa và tìm kiếm sản phẩm
 - **Quản lý Hóa đơn**: Tạo và quản lý hóa đơn bán hàng
 - **Thống kê**: Xem báo cáo doanh thu, sản phẩm bán chạy và khách hàng tiềm năng
-- **Nhập/Xuất dữ liệu**: Hỗ trợ nhập/xuất dữ liệu dưới dạng CSV
-- **Giao diện thân thiện**: Hỗ trợ cả giao diện đồ họa (GUI) và giao diện dòng lệnh (CLI)
+- **Cơ sở dữ liệu SQLite**: Lưu trữ dữ liệu bền vững và hiệu quả
+- **Giao diện đồ họa**: Giao diện thân thiện sử dụng Tkinter
 
 ## Cấu trúc dự án
 
 ```
-final-project/
+PT_2024.2/
 │
-├── sample_data/         # Dữ liệu mẫu để kiểm thử
 ├── src/                 # Mã nguồn
 │   ├── core/            # Logic nghiệp vụ cốt lõi
-│   ├── data/            # Các module xử lý dữ liệu
-│   ├── invoicemanager/  # Module ứng dụng chính
-│   │   └── data/        # Dữ liệu quản lý hóa đơn
+│   │   ├── product_manager.py      # Quản lý sản phẩm
+│   │   ├── invoice_manager.py      # Quản lý hóa đơn
+│   │   └── statistics_manager.py   # Quản lý thống kê
+│   ├── database/        # Quản lý cơ sở dữ liệu SQLite
+│   │   ├── database.py             # Khởi tạo và cấu hình database
+│   │   └── invoicemanager.db       # File database SQLite
 │   ├── models/          # Các mô hình dữ liệu
+│   │   ├── product.py              # Mô hình sản phẩm
+│   │   └── invoice.py              # Mô hình hóa đơn
 │   ├── ui/              # Giao diện người dùng
-│   │   ├── cli/         # Giao diện dòng lệnh
-│   │   └── gui/         # Giao diện đồ họa
-│   └── utils/           # Các hàm tiện ích
+│   │   └── gui.py                  # Giao diện đồ họa Tkinter
+│   ├── utils/           # Các hàm tiện ích
+│   │   ├── db_utils.py             # Tiện ích database
+│   │   ├── file_utils.py           # Tiện ích file
+│   │   ├── formatting.py           # Định dạng dữ liệu
+│   │   └── validation.py           # Xác thực dữ liệu
+│   └── main.py          # Điểm vào chính của ứng dụng
 ├── tests/               # Bộ kiểm thử
 │   ├── integration/     # Kiểm thử tích hợp
+│   │   └── test_main_workflow.py
 │   └── unit/            # Kiểm thử đơn vị
-└── pyproject.toml       # Cấu hình dự án
+│       ├── test_product_manager.py
+│       ├── test_invoice_manager.py
+│       ├── test_product_model.py
+│       ├── test_invoice_model.py
+│       └── test_validation.py
+└── README.md            # Tài liệu dự án
 ```
+
+## Yêu cầu hệ thống
+
+- Python 3.7 hoặc cao hơn
+- Tkinter (thường đã được cài đặt sẵn với Python)
+- SQLite3 (thường đã được cài đặt sẵn với Python)
 
 ## Cài đặt
 
-1. Đảm bảo bạn đã cài đặt Python 3.8 hoặc cao hơn
-2. Tải mã nguồn về máy
+1. Tải mã nguồn về máy:
 
 ```bash
 git clone https://github.com/minh20051202/PT_2024.2
-
 cd PT_2024.2
 ```
 
-3. Cài đặt các thư viện cần thiết:
+2. Khởi tạo cơ sở dữ liệu (tùy chọn):
 
 ```bash
-pip install [TÊN_THƯ_VIỆN]
+python3 src/database/database.py
 ```
+
+**Lưu ý**: Ứng dụng sử dụng các thư viện có sẵn trong Python, không cần cài đặt thêm gói nào khác.
 
 ## Sử dụng
 

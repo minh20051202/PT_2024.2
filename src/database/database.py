@@ -13,10 +13,13 @@ DATABASE_PATH = os.path.join(os.path.dirname(__file__), DATABASE_NAME)
 def initialize_database():
     """
     Khởi tạo database SQLite và tạo các bảng nếu chúng chưa tồn tại.
+
+    Trả về:
+        tuple[bool, str]: (True/False, thông báo)
     """
     # Đảm bảo thư mục tồn tại
     os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
-    
+
     try:
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
@@ -57,10 +60,10 @@ def initialize_database():
         """)
 
         conn.commit()
-        print(f"Database đã được khởi tạo thành công tại: {DATABASE_PATH}")
+        return True, f"Database đã được khởi tạo thành công tại: {DATABASE_PATH}"
 
     except sqlite3.Error as e:
-        print(f"Lỗi khi khởi tạo database: {e}")
+        return False, f"Lỗi khi khởi tạo database: {e}"
     finally:
         if conn:
             conn.close()
@@ -68,4 +71,5 @@ def initialize_database():
 if __name__ == '__main__':
     # Chạy file này trực tiếp để tạo database
     print("Đang tiến hành khởi tạo database...")
-    initialize_database() 
+    success, message = initialize_database()
+    print(message)

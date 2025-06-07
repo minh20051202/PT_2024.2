@@ -1,21 +1,51 @@
-# Bài kiểm tra cho Hệ thống Quản lý Hóa đơn
+# Comprehensive Test Suite
 
-Thư mục này chứa các bài kiểm tra đơn vị và tích hợp cho Hệ thống Quản lý Hóa đơn.
+This directory contains a comprehensive test suite for the invoice management system.
 
-## Cấu trúc thư mục
+## Test Structure
 
-- **unit/**: Chứa các bài kiểm tra đơn vị cho từng thành phần riêng lẻ
+```
+tests/
+├── conftest.py              # Pytest fixtures and configuration
+├── test_helpers.py          # Test helper functions and assertions
+├── test_runner.py           # Test runner script
+├── unit/                    # Unit tests for individual components
+│   ├── test_validation.py   # Validation function tests
+│   ├── test_db_utils.py     # Database utility tests
+│   ├── test_product_model.py # Product model tests
+│   ├── test_invoice_model.py # Invoice model tests
+│   ├── test_product_manager.py # ProductManager tests
+│   ├── test_invoice_manager.py # InvoiceManager tests
+│   └── test_formatting.py   # Formatting utility tests
+└── integration/             # Integration tests
+    └── test_main_workflow.py # End-to-end workflow tests
+```
 
-  - `test_validation.py`: Kiểm tra các hàm validation
-  - `test_product_model.py`: Kiểm tra mô hình Product
-  - `test_invoice_model.py`: Kiểm tra mô hình Invoice và InvoiceItem
-  - `test_product_manager.py`: Kiểm tra ProductManager
-  - `test_invoice_manager.py`: Kiểm tra InvoiceManager
+## Running Tests
 
-- **integration/**: Chứa các bài kiểm tra tích hợp cho các thành phần kết hợp
-  - `test_main_workflow.py`: Kiểm tra luồng làm việc chính của ứng dụng
+### Using the Test Runner (Recommended)
 
-## Các điều kiện được kiểm tra
+```bash
+# Run all tests
+python tests/test_runner.py
+
+# Run with verbose output
+python tests/test_runner.py --verbose
+
+# Run with coverage report
+python tests/test_runner.py --coverage
+
+# Run specific test category
+python tests/test_runner.py --category unit
+python tests/test_runner.py --category integration
+python tests/test_runner.py --category validation
+
+# Run specific test file
+python tests/test_runner.py --file tests/unit/test_validation.py
+
+# List available test categories
+python tests/test_runner.py --list-categories
+```
 
 ### Các điều kiện thành công (Thỏa mãn tất cả điều kiện)
 

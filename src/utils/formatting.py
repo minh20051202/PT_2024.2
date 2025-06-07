@@ -35,10 +35,14 @@ def format_date(date: Union[str, datetime], input_format: str = "%Y-%m-%d", outp
         Chuỗi ngày tháng đã định dạng
     """
     try:
+        if date is None:
+            return ""
         if isinstance(date, str):
+            if not date.strip():  # Empty or whitespace-only string
+                return ""
             date = datetime.strptime(date, input_format)
         return date.strftime(output_format)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         return ""
 
 def format_phone_number(phone: str) -> str:
