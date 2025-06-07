@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Gói mô hình cho Hệ thống Quản lý Hóa đơn.
-Chứa các mô hình dữ liệu cho sản phẩm, hóa đơn và tùy chọn menu.
+Gói models chứa các mô hình dữ liệu cho Hệ thống Quản lý Hóa đơn.
+
+Gói này export các dataclass chính:
+- Product: Mô hình sản phẩm
+- Invoice: Mô hình hóa đơn
+- InvoiceItem: Mô hình mục hàng trong hóa đơn
 """
 
 from .product import Product

@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 Quản lý sản phẩm cho Hệ thống Quản lý Hóa đơn, sử dụng SQLite.
+
+Module này cung cấp lớp ProductManager để thực hiện các thao tác
+CRUD (Create, Read, Update, Delete) với sản phẩm trong database.
+Tất cả dữ liệu được lưu trữ và truy xuất từ SQLite database.
 """
 from typing import List, Optional
 
@@ -41,7 +45,7 @@ class ProductManager:
     def add_product(self, product_id: str, name: str, unit_price: float,
                    calculation_unit: str = "đơn vị", category: str = "General") -> tuple[bool, str]:
         """Thêm một sản phẩm mới vào database."""
-        # Validate input
+        # Xác thực đầu vào
         valid, error = validate_product_id(product_id)
         if not valid:
             return False, error
@@ -57,10 +61,10 @@ class ProductManager:
         if self.find_product(product_id):
             return False, f"Sản phẩm với Mã '{product_id}' đã tồn tại!"
 
-        # Format input
+        # Định dạng đầu vào
         product_id = format_product_id(product_id)
         
-        # Add to database
+        # Thêm vào database
         success, error = save_data("products", {
             "product_id": product_id,
             "name": name,
@@ -90,7 +94,7 @@ class ProductManager:
         if not self.find_product(product_id):
             return False, f"Không tìm thấy sản phẩm với Mã '{product_id}'!"
 
-        # Validate updates
+        # Xác thực cập nhật
         if name is not None:
             valid, error = validate_string_length(name, "Tên sản phẩm", 2, 50)
             if not valid:
@@ -100,7 +104,7 @@ class ProductManager:
             if not valid:
                 return False, error
         
-        # Build update data
+        # Xây dựng dữ liệu cập nhật
         update_data_dict = {}
         if name is not None:
             update_data_dict["name"] = name

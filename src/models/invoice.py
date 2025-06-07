@@ -2,6 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Mô hình Hóa đơn cho Hệ thống Quản lý Hóa đơn.
+
+Module này định nghĩa các dataclass cho hóa đơn bao gồm:
+- InvoiceItem: Đại diện cho một mục hàng trong hóa đơn
+- Invoice: Đại diện cho toàn bộ hóa đơn với danh sách các mục hàng
+
+Các model này cung cấp các property để tính toán tự động
+tổng tiền và số lượng mặt hàng.
 """
 
 from dataclasses import dataclass, field
@@ -35,7 +42,7 @@ class Invoice:
     
     Thuộc tính:
         invoice_id (str): Định danh duy nhất cho hóa đơn
-        date (str): Ngày lập hóa đơn (định dạng ISO)
+        date (str): Ngày lập hóa đơn
         customer_name (str): Tên khách hàng
         items (List[InvoiceItem]): Danh sách các mặt hàng trong hóa đơn
     """

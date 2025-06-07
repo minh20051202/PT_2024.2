@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 Quản lý hóa đơn cho Hệ thống Quản lý Hóa đơn, sử dụng SQLite.
+
+Module này cung cấp lớp InvoiceManager để quản lý các hóa đơn
+bao gồm tạo mới, xóa, xem chi tiết và hiển thị danh sách.
+Làm việc với cả bảng invoices và invoice_items trong database.
 """
 from datetime import datetime
 from typing import List, Optional, Dict, Any
@@ -34,7 +38,7 @@ class InvoiceManager:
         """Tải tất cả hóa đơn và các mục chi tiết từ database."""
         self.invoices = []
 
-        # Load invoices
+        # Tải hóa đơn
         invoice_rows, error = load_data("invoices")
         if error:
             return False, error
@@ -44,7 +48,7 @@ class InvoiceManager:
         for inv_row in invoice_rows:
             invoice_id = inv_row['id']
 
-            # Load invoice items
+            # Tải các mục hóa đơn
             item_rows, error = load_data("invoice_items", {"invoice_id": invoice_id})
             if error:
                 return False, error
@@ -58,7 +62,7 @@ class InvoiceManager:
                 for row in item_rows
             ] if item_rows else []
 
-            # Create Invoice object
+            # Tạo đối tượng Invoice
             invoice = Invoice(
                 invoice_id=str(invoice_id),
                 customer_name=inv_row['customer_name'],
@@ -77,23 +81,23 @@ class InvoiceManager:
         Trả về:
             tuple[Optional[Invoice], str]: (Invoice object nếu thành công, thông báo lỗi nếu có)
         """
-        # Validate input
+        # Xác thực đầu vào
         valid, error = validate_required_field(customer_name, "Tên khách hàng")
         if not valid:
             return None, error
         if not items_data:
             return None, "Hóa đơn phải có ít nhất một mặt hàng."
 
-        # Validate date format
+        # Xác thực định dạng ngày
         invoice_date = date if date else datetime.now().strftime('%Y-%m-%d')
         valid, error = validate_date_format(invoice_date, "Ngày hóa đơn")
         if not valid:
             return None, error
-            
-        # Format input
+
+        # Định dạng đầu vào
         customer_name = format_customer_name(customer_name)
-        
-        # Validate items
+
+        # Xác thực các mục
         for item in items_data:
             valid, error = validate_quantity(item.get('quantity'))
             if not valid:
@@ -101,26 +105,26 @@ class InvoiceManager:
             if not self.product_manager.find_product(item.get('product_id')):
                 return None, f"Sản phẩm với ID {item.get('product_id')} không tồn tại."
         
-        # Insert invoice
+        # Chèn hóa đơn
         invoice_data = {
             "customer_name": customer_name,
             "date": invoice_date
         }
-        
+
         success, error = save_data("invoices", invoice_data)
         if not success:
             return None, error
 
-        # Get the new invoice ID
+        # Lấy ID hóa đơn mới
         new_invoice, error = load_data("invoices", {"customer_name": customer_name, "date": invoice_date})
         if error:
             return None, error
         if not new_invoice:
             return None, "Không thể tìm thấy hóa đơn vừa tạo."
-            
+
         new_invoice_id = new_invoice[0]['id']
-        
-        # Insert items
+
+        # Chèn các mục
         for item_data in items_data:
             product = self.product_manager.find_product(item_data['product_id'])
             item_data = {
@@ -145,6 +149,42 @@ class InvoiceManager:
             if invoice.invoice_id == invoice_id:
                 return invoice
         return None
+
+    def delete_invoice(self, invoice_id: str) -> tuple[bool, str]:
+        """
+        Xóa hóa đơn khỏi database.
+
+        Tham số:
+            invoice_id: ID của hóa đơn cần xóa
+
+        Trả về:
+            tuple[bool, str]: (True/False, thông báo)
+        """
+        # Kiểm tra hóa đơn có tồn tại không
+        invoice = self.find_invoice(invoice_id)
+        if not invoice:
+            return False, f"Không tìm thấy hóa đơn với ID '{invoice_id}'!"
+
+        try:
+            # Xóa các mục hóa đơn trước (foreign key constraint)
+            success, error = delete_data("invoice_items", {"invoice_id": int(invoice_id)})
+            if not success:
+                return False, f"Không thể xóa các mục hóa đơn: {error}"
+
+            # Xóa hóa đơn
+            success, error = delete_data("invoices", {"id": int(invoice_id)})
+            if not success:
+                return False, f"Không thể xóa hóa đơn: {error}"
+
+            # Tải lại danh sách hóa đơn
+            self.load_invoices()
+
+            return True, f"Đã xóa thành công hóa đơn #{invoice_id} của khách hàng '{invoice.customer_name}'."
+
+        except ValueError:
+            return False, f"ID hóa đơn '{invoice_id}' không hợp lệ!"
+        except Exception as e:
+            return False, f"Lỗi khi xóa hóa đơn: {str(e)}"
     
     def view_invoice_detail(self, invoice_id: str) -> None:
         """Hiển thị chi tiết hóa đơn (dùng cho CLI)."""

@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Comprehensive integration tests for the main application workflow.
+Kiểm tra tích hợp luồng làm việc chính của hệ thống quản lý hóa đơn.
+
+Module kiểm thử này thực hiện end-to-end testing cho:
+- Luồng làm việc hoàn chỉnh: Từ thêm sản phẩm đến tạo hóa đơn
+- Tương tác giữa các component: ProductManager, InvoiceManager, StatisticsManager
+- Kiểm tra data consistency: Giữa các bảng database
+- Performance testing: Với dataset thực tế
+- Error recovery: Xử lý khi có lỗi trong quá trình
+
+Mô phỏng các kịch bản kiểm định thực tế.
 """
 
 import pytest
@@ -12,27 +21,26 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-# Add src to path for imports
+# Thêm src vào path để import
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from core.product_manager import ProductManager
 from core.invoice_manager import InvoiceManager
 from models import Product, Invoice
-from tests.test_helpers import TestAssertions
+from test_helpers import TestAssertions
 
 class TestMainWorkflow:
-    """Integration tests for main application workflow."""
-    """Kiểm thử tích hợp cho luồng làm việc chính."""
-    
+    """Kiểm tra tích hợp cho luồng làm việc chính của ứng dụng."""
+
     def test_complete_product_and_invoice_workflow(self, temp_db):
-        """Test complete workflow from product creation to invoice generation."""
+        """Kiểm tra luồng làm việc hoàn chỉnh từ tạo sản phẩm đến tạo hóa đơn."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             with patch('database.database.DATABASE_PATH', temp_db):
-                # Initialize managers
+                # Khởi tạo managers
                 product_manager = ProductManager()
                 invoice_manager = InvoiceManager(product_manager)
 
-                # 1. Add products
+                # 1. Thêm sản phẩm
                 success, message = product_manager.add_product(
                     product_id="P001",
                     name="Laptop Dell",
@@ -40,7 +48,7 @@ class TestMainWorkflow:
                     category="Electronics",
                     calculation_unit="chiếc"
                 )
-                assert success, f"Failed to add product: {message}"
+                assert success, f"Không thể thêm sản phẩm: {message}"
 
                 success, message = product_manager.add_product(
                     product_id="P002",
@@ -49,12 +57,12 @@ class TestMainWorkflow:
                     category="Accessories",
                     calculation_unit="cái"
                 )
-                assert success, f"Failed to add second product: {message}"
+                assert success, f"Không thể thêm sản phẩm thứ hai: {message}"
 
-                # Verify products were added
+                # Xác minh sản phẩm đã được thêm
                 assert len(product_manager.products) == 2
 
-                # 2. Create invoice
+                # 2. Tạo hóa đơn
                 items_data = [
                     {"product_id": "P001", "quantity": 1},
                     {"product_id": "P002", "quantity": 2}
@@ -65,29 +73,29 @@ class TestMainWorkflow:
                     items_data=items_data
                 )
 
-                assert invoice is not None, f"Failed to create invoice: {message}"
+                assert invoice is not None, f"Không thể tạo hóa đơn: {message}"
                 assert invoice.customer_name == "Nguyễn Văn A"
                 assert len(invoice.items) == 2
                 assert invoice.total_amount == 26000000.0  # 25000000 + 2*500000
 
-                # 3. Verify invoice was saved and can be loaded
+                # 3. Xác minh hóa đơn đã được lưu và có thể tải
                 success, message = invoice_manager.load_invoices()
-                assert success, f"Failed to load invoices: {message}"
+                assert success, f"Không thể tải hóa đơn: {message}"
                 assert len(invoice_manager.invoices) >= 1
 
     def test_error_handling_workflow(self, temp_db):
-        """Test error handling in the workflow."""
+        """Kiểm tra xử lý lỗi trong luồng làm việc."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             with patch('database.database.DATABASE_PATH', temp_db):
                 product_manager = ProductManager()
                 invoice_manager = InvoiceManager(product_manager)
 
-                # Test adding invalid product
+                # Kiểm tra thêm sản phẩm không hợp lệ
                 success, message = product_manager.add_product("", "Invalid Product", 100.0)
                 assert not success
                 assert "Mã sản phẩm" in message
 
-                # Test creating invoice with no products
+                # Kiểm tra tạo hóa đơn với sản phẩm không tồn tại
                 invoice, message = invoice_manager.create_invoice(
                     customer_name="Test Customer",
                     items_data=[{"product_id": "NONEXISTENT", "quantity": 1}]

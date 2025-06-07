@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Giao diện đồ họa (GUI) cho Hệ thống Quản lý Hóa đơn, sử dụng .
+Giao diện đồ họa (GUI) cho Hệ thống Quản lý Hóa đơn, sử dụng Tkinter.
+
+Module này cung cấp giao diện đồ họa chính của ứng dụng, bao gồm:
+- Lớp InvoiceAppGUI: Giao diện chính với tabs cho sản phẩm, hóa đơn và thống kê
+- Chức năng quản lý sản phẩm: thêm, sửa, xóa, hiển thị danh sách
+- Chức năng quản lý hóa đơn: tạo mới, xem chi tiết, xóa
+- Chức năng thống kê: doanh thu, sản phẩm bán chạy, khách hàng VIP
 """
+
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import io
@@ -14,7 +21,29 @@ from core.invoice_manager import InvoiceManager
 from core.statistics_manager import StatisticsManager
 
 class InvoiceAppGUI:
+    """
+    Lớp giao diện đồ họa chính cho ứng dụng quản lý hóa đơn.
+    
+    Lớp này tạo và quản lý giao diện người dùng với các tab khác nhau
+    để quản lý sản phẩm, hóa đơn và xem thống kê.
+    
+    Thuộc tính:
+        root: Cửa sổ gốc Tkinter
+        product_manager: Đối tượng quản lý sản phẩm
+        invoice_manager: Đối tượng quản lý hóa đơn
+        statistics_manager: Đối tượng quản lý thống kê
+    """
+    
     def __init__(self, root):
+        """
+        Khởi tạo giao diện ứng dụng quản lý hóa đơn.
+        
+        Tham số:
+            root: Cửa sổ gốc Tkinter
+            
+        Ném ra:
+            Exception: Nếu không thể khởi tạo các trình quản lý
+        """
         self.root = root
         self.root.title("Hệ thống Quản lý Hóa đơn")
         self.root.geometry("900x700")
@@ -46,6 +75,17 @@ class InvoiceAppGUI:
         self._create_statistics_tab()
 
     def _create_product_tab(self):
+        """
+        Tạo tab quản lý sản phẩm với danh sách và các chức năng CRUD.
+        
+        Tab này bao gồm:
+        - Treeview hiển thị danh sách sản phẩm
+        - Các nút thêm, sửa, xóa sản phẩm
+        - Chức năng tải lại dữ liệu
+        
+        Trả về:
+            None
+        """
         # Frame chứa danh sách sản phẩm
         list_frame = ttk.LabelFrame(self.product_tab, text="Danh sách sản phẩm")
         list_frame.pack(fill="both", expand=True, padx=10, pady=5)
@@ -100,6 +140,20 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể tải danh sách sản phẩm: {str(e)}")
 
     def add_product_dialog(self):
+        """
+        Hiển thị hộp thoại để thêm sản phẩm mới.
+        
+        Tạo một cửa sổ popup với các trường nhập liệu để người dùng
+        nhập thông tin sản phẩm mới. Sau khi xác thực, sản phẩm sẽ
+        được thêm vào database.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            ValueError: Nếu đơn giá không hợp lệ
+            Exception: Nếu không thể thêm sản phẩm
+        """
         dialog = tk.Toplevel(self.root)
         dialog.title("Thêm sản phẩm mới")
         dialog.geometry("400x300")
@@ -149,6 +203,19 @@ class InvoiceAppGUI:
         ttk.Button(button_frame, text="Hủy", command=dialog.destroy).pack(side="right", padx=5)
 
     def update_product_dialog(self):
+        """
+        Hiển thị hộp thoại để cập nhật thông tin sản phẩm đã chọn.
+        
+        Kiểm tra xem có sản phẩm nào được chọn không, sau đó hiển thị
+        cửa sổ popup với thông tin hiện tại để người dùng chỉnh sửa.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            ValueError: Nếu đơn giá không hợp lệ
+            Exception: Nếu không thể cập nhật sản phẩm
+        """
         selected = self.product_tree.selection()
         if not selected:
             messagebox.showinfo("Thông báo", "Vui lòng chọn một sản phẩm để cập nhật.")
@@ -208,6 +275,18 @@ class InvoiceAppGUI:
         ttk.Button(button_frame, text="Hủy", command=dialog.destroy).pack(side="right", padx=5)
 
     def delete_product(self):
+        """
+        Xóa sản phẩm đã chọn sau khi xác nhận với người dùng.
+        
+        Kiểm tra xem có sản phẩm nào được chọn không, sau đó hiển thị
+        hộp thoại xác nhận trước khi xóa sản phẩm khỏi database.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không thể xóa sản phẩm
+        """
         selected = self.product_tree.selection()
         if not selected:
             messagebox.showinfo("Thông báo", "Vui lòng chọn một sản phẩm để xóa.")
@@ -227,6 +306,17 @@ class InvoiceAppGUI:
                 messagebox.showerror("Lỗi", f"Không thể xóa sản phẩm: {str(e)}")
 
     def _create_invoice_tab(self):
+        """
+        Tạo tab quản lý hóa đơn với danh sách và các chức năng quản lý.
+        
+        Tab này bao gồm:
+        - Treeview hiển thị danh sách hóa đơn
+        - Các nút xem chi tiết, tạo mới, xóa hóa đơn
+        - Chức năng tải lại dữ liệu
+        
+        Trả về:
+            None
+        """
         list_frame = ttk.LabelFrame(self.invoice_tab, text="Danh sách hóa đơn")
         list_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
@@ -249,6 +339,7 @@ class InvoiceAppGUI:
         ttk.Button(button_frame, text="Tải lại", command=self.load_invoices).pack(side="left", padx=5)
         ttk.Button(button_frame, text="Xem chi tiết", command=self.view_invoice_details).pack(side="left", padx=5)
         ttk.Button(button_frame, text="Tạo hóa đơn", command=self.create_new_invoice).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Xóa hóa đơn", command=self.delete_invoice).pack(side="left", padx=5)
         
         self.load_invoices()
 
@@ -275,6 +366,19 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể tải danh sách hóa đơn: {str(e)}")
 
     def view_invoice_details(self):
+        """
+        Hiển thị chi tiết hóa đơn đã chọn trong cửa sổ mới.
+        
+        Kiểm tra xem có hóa đơn nào được chọn không, sau đó tạo
+        cửa sổ popup hiển thị thông tin chi tiết của hóa đơn bao gồm
+        thông tin khách hàng và danh sách các mặt hàng.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không tìm thấy hóa đơn
+        """
         selected = self.invoice_tree.selection()
         if not selected:
             messagebox.showinfo("Thông báo", "Vui lòng chọn một hóa đơn để xem chi tiết.")
@@ -327,7 +431,65 @@ class InvoiceAppGUI:
         
         ttk.Button(detail_window, text="Đóng", command=detail_window.destroy).pack(pady=10)
 
+    def delete_invoice(self):
+        """Xóa hóa đơn đã chọn sau khi xác nhận."""
+        selected = self.invoice_tree.selection()
+        if not selected:
+            messagebox.showinfo("Thông báo", "Vui lòng chọn một hóa đơn để xóa.")
+            return
+
+        # Lấy thông tin hóa đơn được chọn
+        invoice_id = self.invoice_tree.item(selected[0], "values")[0]
+        invoice = self.invoice_manager.find_invoice(invoice_id)
+        if not invoice:
+            messagebox.showerror("Lỗi", f"Không tìm thấy hóa đơn #{invoice_id}.")
+            return
+
+        # Xác nhận xóa với thông tin chi tiết
+        confirm_message = (
+            f"Bạn có chắc chắn muốn xóa hóa đơn này?\n\n"
+            f"Mã hóa đơn: #{invoice.invoice_id}\n"
+            f"Khách hàng: {invoice.customer_name}\n"
+            f"Ngày: {invoice.date}\n"
+            f"Tổng tiền: {invoice.total_amount:,.0f} VND\n"
+            f"Số mặt hàng: {invoice.total_items}\n\n"
+            f"⚠️ Hành động này không thể hoàn tác!"
+        )
+
+        result = messagebox.askyesno(
+            "Xác nhận xóa hóa đơn",
+            confirm_message,
+            icon='warning'
+        )
+
+        if result:
+            try:
+                success, message = self.invoice_manager.delete_invoice(invoice_id)
+                if success:
+                    messagebox.showinfo("Thành công", message)
+                    self.load_invoices()  # Tải lại danh sách hóa đơn
+                else:
+                    messagebox.showerror("Lỗi", message)
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể xóa hóa đơn: {str(e)}")
+
     def create_new_invoice(self):
+        """
+        Hiển thị hộp thoại để tạo hóa đơn mới.
+        
+        Tạo cửa sổ popup phức tạp cho phép người dùng:
+        - Nhập thông tin khách hàng
+        - Chọn sản phẩm và số lượng
+        - Xem tổng tiền tạm tính
+        - Tạo hóa đơn mới
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            ValueError: Nếu số lượng không hợp lệ
+            Exception: Nếu không thể tạo hóa đơn
+        """
         if not self.product_manager.products:
             messagebox.showinfo("Thông báo", "Không có sản phẩm nào. Vui lòng thêm sản phẩm trước.")
             return
@@ -450,6 +612,17 @@ class InvoiceAppGUI:
         ttk.Button(button_frame, text="Hủy", command=dialog.destroy).pack(side="right")
         
     def _create_statistics_tab(self):
+        """
+        Tạo tab thống kê với các loại báo cáo khác nhau.
+        
+        Tab này bao gồm:
+        - Sub-tab doanh thu (theo sản phẩm, theo thời gian)
+        - Sub-tab sản phẩm (bán chạy nhất, phân loại)
+        - Sub-tab khách hàng (khách hàng thân thiết)
+        
+        Trả về:
+            None
+        """
         # Tạo các frame cho các loại thống kê
         stats_notebook = ttk.Notebook(self.statistics_tab)
         stats_notebook.pack(fill="both", expand=True, padx=10, pady=5)
@@ -522,6 +695,19 @@ class InvoiceAppGUI:
         self.customer_result.config(state="disabled")
 
     def show_revenue_by_product(self):
+        """
+        Hiển thị thống kê doanh thu theo từng sản phẩm.
+        
+        Thu thập dữ liệu từ statistics_manager và hiển thị trong
+        khu vực văn bản của tab doanh thu. Sử dụng chuyển hướng
+        stdout để bắt output từ hàm thống kê.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không thể tạo báo cáo thống kê
+        """
         try:
             if self.statistics_manager is None:
                 messagebox.showwarning("Cảnh báo", "Trình quản lý thống kê chưa được khởi tạo")
@@ -564,6 +750,19 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê doanh thu theo sản phẩm: {str(e)}")
 
     def show_revenue_by_time(self):
+        """
+        Hiển thị thống kê doanh thu theo thời gian.
+        
+        Thu thập dữ liệu từ statistics_manager và hiển thị trong
+        khu vực văn bản của tab doanh thu. Sử dụng chuyển hướng
+        stdout để bắt output từ hàm thống kê.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không thể tạo báo cáo thống kê
+        """
         try:
             if self.statistics_manager is None:
                 messagebox.showwarning("Cảnh báo", "Trình quản lý thống kê chưa được khởi tạo")
@@ -606,6 +805,18 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê doanh thu theo thời gian: {str(e)}")
 
     def show_top_products(self):
+        """
+        Hiển thị thống kê các sản phẩm bán chạy nhất.
+        
+        Tính toán số lượng bán ra của từng sản phẩm dựa trên dữ liệu
+        hóa đơn, sắp xếp theo thứ tự giảm dần và hiển thị báo cáo.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không thể tạo báo cáo thống kê
+        """
         try:
             if self.statistics_manager is None:
                 messagebox.showwarning("Cảnh báo", "Trình quản lý thống kê chưa được khởi tạo")
@@ -673,6 +884,18 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê sản phẩm bán chạy: {str(e)}")
 
     def show_product_categories(self):
+        """
+        Hiển thị thống kê sản phẩm theo danh mục.
+        
+        Nhóm các sản phẩm theo danh mục và hiển thị thông tin
+        chi tiết về từng danh mục bao gồm số lượng và tỷ lệ phần trăm.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không thể tạo báo cáo thống kê
+        """
         try:
             if self.product_manager is None:
                 messagebox.showwarning("Cảnh báo", "Trình quản lý sản phẩm chưa được khởi tạo")
@@ -721,6 +944,19 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê sản phẩm theo danh mục: {str(e)}")
 
     def show_top_customers(self):
+        """
+        Hiển thị thống kê khách hàng thân thiết.
+        
+        Hiển thị hộp thoại để người dùng chọn số lượng khách hàng
+        muốn xem, sau đó gọi statistics_manager để tạo báo cáo
+        và hiển thị kết quả.
+        
+        Trả về:
+            None
+        
+        Ném ra:
+            Exception: Nếu không thể tạo báo cáo thống kê
+        """
         try:
             if self.statistics_manager is None:
                 messagebox.showwarning("Cảnh báo", "Trình quản lý thống kê chưa được khởi tạo")
@@ -773,13 +1009,25 @@ class InvoiceAppGUI:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê khách hàng tiềm năng: {str(e)}")
 
 def start_gui():
-    """Hàm khởi động giao diện đồ họa"""
+    """
+    Hàm khởi động giao diện đồ họa chính của ứng dụng.
+    
+    Tạo cửa sổ Tkinter root và khởi tạo lớp InvoiceAppGUI,
+    sau đó bắt đầu vòng lặp sự kiện chính. Xử lý các lỗi
+    nghiêm trọng bằng cách hiển thị hộp thoại lỗi.
+    
+    Trả về:
+        None
+    
+    Ném ra:
+        Exception: Nếu không thể khởi tạo giao diện
+        tk.TclError: Nếu có lỗi với Tkinter
+    """
     try:
         root = tk.Tk()
         app = InvoiceAppGUI(root)
         root.mainloop()
     except Exception as e:
-        # Hiển thị lỗi trong một cửa sổ Tkinter đơn giản nếu có thể
         try:
             error_root = tk.Tk()
             error_root.title("Lỗi nghiêm trọng")
@@ -789,5 +1037,4 @@ def start_gui():
             ttk.Button(error_root, text="Đóng", command=error_root.destroy).pack(pady=10)
             error_root.mainloop()
         except tk.TclError:
-            # Nếu ngay cả cửa sổ lỗi cũng không hiển thị được, không làm gì
             pass

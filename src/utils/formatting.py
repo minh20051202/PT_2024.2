@@ -2,6 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 Các hàm tiện ích định dạng cho Hệ thống Quản lý Hóa đơn.
+
+Module này cung cấp các hàm để định dạng dữ liệu hiển thị
+trước người dùng một cách chuyên nghiệp và nhất quán.
+Bao gồm định dạng:
+- Tiền tệ với dấu phân cách hàng nghìn
+- Ngày tháng và số điện thoại Việt Nam
+- Mã sản phẩm và tên khách hàng
+- Số hóa đơn chuẩn
 """
 
 from datetime import datetime

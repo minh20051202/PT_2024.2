@@ -2,6 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 Các hàm tiện ích xử lý database cho Hệ thống Quản lý Hóa đơn.
+
+Module này cung cấp các hàm tiện ích để thực hiện các thao tác
+CRUD cơ bản với SQLite database. Các hàm được thiết kế để
+phục vụ các manager khác và xử lý lỗi một cách an toàn.
+Bao gồm:
+- Kiểm tra và tạo database
+- Lưu, tải, cập nhật và xóa dữ liệu
+- Xử lý lỗi và exception an toàn
 """
 
 import sqlite3

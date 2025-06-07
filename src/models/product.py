@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 Mô hình Sản phẩm cho Hệ thống Quản lý Hóa đơn.
+
+Module này định nghĩa dataclass Product đại diện cho một sản phẩm
+trong hệ thống, bao gồm các thuộc tính cơ bản như mã sản phẩm,
+tên, giá và đơn vị tính. Model cũng bao gồm validation cơ bản
+trong __post_init__ method.
 """
 
 from dataclasses import dataclass, field
@@ -30,4 +35,3 @@ class Product:
             raise ValueError("Mã sản phẩm và tên không được để trống")
         if self.unit_price < 0:
             raise ValueError("Đơn giá không được âm")
-        # Có thể thêm xác thực cho calculation_unit nếu cần 

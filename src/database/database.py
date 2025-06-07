@@ -2,6 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 Module để khởi tạo và quản lý database SQLite.
+
+Module này chịu trách nhiệm thiết lập và quản lý cơ sở dữ liệu
+SQLite cho hệ thống quản lý hóa đơn. Bao gồm:
+- Khởi tạo database và các bảng cần thiết
+- Định nghĩa schema cho products, invoices, invoice_items
+- Thiết lập foreign key constraints
+- Cấu hình đường dẫn database
+
+Database được đặt trong cùng thư mục với module này.
 """
 import sqlite3
 import os
@@ -20,6 +29,7 @@ def initialize_database():
     # Đảm bảo thư mục tồn tại
     os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
 
+    conn = None
     try:
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()

@@ -2,10 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 Các hàm tiện ích kiểm tra dữ liệu cho Hệ thống Quản lý Hóa đơn.
+
+Module này cung cấp các hàm validation để kiểm tra tính hợp lệ của
+dữ liệu đầu vào trong toàn bộ ứng dụng. Bao gồm kiểm tra:
+- Số dương và trường bắt buộc
+- Độ dài chuỗi và định dạng ngày tháng
+- Email, số điện thoại và mã sản phẩm
+- Số lượng sản phẩm
+
+Tất cả hàm trả về tuple (bool, str) với thông báo lỗi tiếng Việt.
 """
 
-from typing import Any, Union, List, Tuple
 import re
+from typing import Any, Union, List, Tuple
 from datetime import datetime
 
 def validate_positive_number(value: Union[int, float], field_name: str) -> Tuple[bool, str]:

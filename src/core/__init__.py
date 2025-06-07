@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Gói lõi cho Hệ thống Quản lý Hóa đơn.
-Chứa logic nghiệp vụ chính để quản lý sản phẩm, hóa đơn và thống kê.
+Gói core chứa business logic chính cho Hệ thống Quản lý Hóa đơn.
+
+Gói này chứa các manager classes:
+- ProductManager: Quản lý sản phẩm
+- InvoiceManager: Quản lý hóa đơn
+- StatisticsManager: Quản lý thống kê và báo cáo
 """
 
 from .product_manager import ProductManager

@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Comprehensive tests for database utilities.
+Kiểm tra toàn diện cho các hàm db_utils.
+
+Module kiểm thử này bao gồm các test cases cho:
+- Các hàm CRUD cơ bản: save_data, load_data, update_data, delete_data
+- Xử lý lỗi database: SQLite exceptions, connection issues
+- Kiểm tra data integrity: Transactions, rollbacks
+- Performance testing: Large datasets, concurrent access
+- Security testing: SQL injection prevention
+
+Sử dụng temp database để đảm bảo test isolation.
 """
 
 import pytest
@@ -11,7 +20,7 @@ import sys
 import sqlite3
 from unittest.mock import patch
 
-# Add src to path for imports
+# Thêm src vào path để import
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from utils.db_utils import (
@@ -25,33 +34,33 @@ from database.database import initialize_database
 
 
 class TestEnsureDatabaseExists:
-    """Tests for ensure_database_exists function."""
-    
+    """Kiểm tra cho hàm ensure_database_exists."""
+
     def test_database_creation(self, temp_db):
-        """Test database creation when it doesn't exist."""
-        # Remove the database file
+        """Kiểm tra tạo database khi nó không tồn tại."""
+        # Xóa file database
         if os.path.exists(temp_db):
             os.unlink(temp_db)
-        
+
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             success, message = ensure_database_exists()
             assert success
             assert message == ""
-            # Directory should be created
+            # Thư mục nên được tạo
             assert os.path.exists(os.path.dirname(temp_db))
-    
+
     def test_database_already_exists(self, temp_db):
-        """Test when database already exists."""
+        """Kiểm tra khi database đã tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             success, message = ensure_database_exists()
             assert success
             assert message == ""
-    
+
     def test_permission_error(self):
-        """Test handling of permission errors."""
-        # Try to create database in a read-only location
+        """Kiểm tra xử lý lỗi quyền truy cập."""
+        # Thử tạo database ở vị trí chỉ đọc
         readonly_path = "/root/readonly/test.db"
-        
+
         with patch('utils.db_utils.DATABASE_PATH', readonly_path):
             success, message = ensure_database_exists()
             assert not success
@@ -59,10 +68,10 @@ class TestEnsureDatabaseExists:
 
 
 class TestSaveData:
-    """Tests for save_data function."""
-    
+    """Kiểm tra cho hàm save_data."""
+
     def test_save_product_data(self, temp_db):
-        """Test saving product data."""
+        """Kiểm tra lưu dữ liệu sản phẩm."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             product_data = {
                 'product_id': 'P001',
@@ -71,63 +80,63 @@ class TestSaveData:
                 'calculation_unit': 'chiếc',
                 'category': 'Test'
             }
-            
+
             success, message = save_data('products', product_data)
             assert success
             assert message == ""
-            
-            # Verify data was saved
+
+            # Xác minh dữ liệu đã được lưu
             conn = sqlite3.connect(temp_db)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM products WHERE product_id = ?", ('P001',))
             result = cursor.fetchone()
             conn.close()
-            
+
             assert result is not None
             assert result[0] == 'P001'  # product_id
             assert result[1] == 'Test Product'  # name
-    
+
     def test_save_invoice_data(self, temp_db):
-        """Test saving invoice data."""
+        """Kiểm tra lưu dữ liệu hóa đơn."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             invoice_data = {
                 'customer_name': 'Nguyễn Văn A',
                 'date': '2023-12-25'
             }
-            
+
             success, message = save_data('invoices', invoice_data)
             assert success
             assert message == ""
-    
+
     def test_save_invalid_table(self, temp_db):
-        """Test saving to non-existent table."""
+        """Kiểm tra lưu vào bảng không tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             data = {'field': 'value'}
-            
+
             success, message = save_data('nonexistent_table', data)
             assert not success
             assert "Lỗi khi lưu dữ liệu" in message
-    
+
     def test_save_invalid_data(self, temp_db):
-        """Test saving invalid data structure."""
+        """Kiểm tra lưu cấu trúc dữ liệu không hợp lệ."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
-            # Missing required fields
+            # Thiếu các trường bắt buộc
             invalid_data = {
                 'invalid_field': 'value'
             }
-            
+
             success, message = save_data('products', invalid_data)
             assert not success
             assert "Lỗi khi lưu dữ liệu" in message
 
 
 class TestLoadData:
-    """Tests for load_data function."""
-    
+    """Kiểm tra cho hàm load_data."""
+
     def test_load_all_products(self, temp_db):
-        """Test loading all products."""
+        """Kiểm tra tải tất cả sản phẩm."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
-            # First, save some test data
+            # Đầu tiên, lưu một số dữ liệu test
             test_products = [
                 {
                     'product_id': 'P001',
@@ -144,21 +153,21 @@ class TestLoadData:
                     'category': 'Test'
                 }
             ]
-            
+
             for product in test_products:
                 save_data('products', product)
-            
-            # Load all products
+
+            # Tải tất cả sản phẩm
             products, error = load_data('products')
             assert error == ""
             assert len(products) == 2
             assert products[0]['product_id'] == 'P001'
             assert products[1]['product_id'] == 'P002'
-    
+
     def test_load_with_conditions(self, temp_db):
-        """Test loading data with conditions."""
+        """Kiểm tra tải dữ liệu với điều kiện."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
-            # Save test data
+            # Lưu dữ liệu test
             products = [
                 {
                     'product_id': 'P001',
@@ -175,25 +184,25 @@ class TestLoadData:
                     'category': 'Office'
                 }
             ]
-            
+
             for product in products:
                 save_data('products', product)
-            
-            # Load with condition
+
+            # Tải với điều kiện
             results, error = load_data('products', {'category': 'Electronics'})
             assert error == ""
             assert len(results) == 1
             assert results[0]['product_id'] == 'P001'
-    
+
     def test_load_empty_table(self, temp_db):
-        """Test loading from empty table."""
+        """Kiểm tra tải từ bảng rỗng."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             results, error = load_data('products')
             assert error == ""
             assert results == []
-    
+
     def test_load_nonexistent_table(self, temp_db):
-        """Test loading from non-existent table."""
+        """Kiểm tra tải từ bảng không tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             results, error = load_data('nonexistent_table')
             assert error != ""
@@ -202,12 +211,12 @@ class TestLoadData:
 
 
 class TestUpdateData:
-    """Tests for update_data function."""
-    
+    """Kiểm tra cho hàm update_data."""
+
     def test_update_product(self, temp_db):
-        """Test updating product data."""
+        """Kiểm tra cập nhật dữ liệu sản phẩm."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
-            # First, save a product
+            # Đầu tiên, lưu một sản phẩm
             original_data = {
                 'product_id': 'P001',
                 'name': 'Original Product',
@@ -216,54 +225,54 @@ class TestUpdateData:
                 'category': 'Test'
             }
             save_data('products', original_data)
-            
-            # Update the product
+
+            # Cập nhật sản phẩm
             update_values = {
                 'name': 'Updated Product',
                 'unit_price': 150.0
             }
             conditions = {'product_id': 'P001'}
-            
+
             success, message = update_data('products', update_values, conditions)
             assert success
             assert message == ""
-            
-            # Verify update
+
+            # Xác minh cập nhật
             products, _ = load_data('products', {'product_id': 'P001'})
             assert len(products) == 1
             assert products[0]['name'] == 'Updated Product'
             assert products[0]['unit_price'] == 150.0
-            assert products[0]['category'] == 'Test'  # Unchanged
-    
+            assert products[0]['category'] == 'Test'  # Không thay đổi
+
     def test_update_nonexistent_record(self, temp_db):
-        """Test updating non-existent record."""
+        """Kiểm tra cập nhật bản ghi không tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             update_values = {'name': 'New Name'}
             conditions = {'product_id': 'NONEXISTENT'}
-            
+
             success, message = update_data('products', update_values, conditions)
-            # Should succeed even if no rows affected
+            # Nên thành công ngay cả khi không có hàng nào bị ảnh hưởng
             assert success
             assert message == ""
-    
+
     def test_update_invalid_table(self, temp_db):
-        """Test updating non-existent table."""
+        """Kiểm tra cập nhật bảng không tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             update_values = {'field': 'value'}
             conditions = {'id': 1}
-            
+
             success, message = update_data('nonexistent_table', update_values, conditions)
             assert not success
             assert "Lỗi khi cập nhật dữ liệu" in message
 
 
 class TestDeleteData:
-    """Tests for delete_data function."""
-    
+    """Kiểm tra cho hàm delete_data."""
+
     def test_delete_product(self, temp_db):
-        """Test deleting product data."""
+        """Kiểm tra xóa dữ liệu sản phẩm."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
-            # First, save some products
+            # Đầu tiên, lưu một số sản phẩm
             products = [
                 {
                     'product_id': 'P001',
@@ -280,30 +289,30 @@ class TestDeleteData:
                     'category': 'Test'
                 }
             ]
-            
+
             for product in products:
                 save_data('products', product)
-            
-            # Delete one product
+
+            # Xóa một sản phẩm
             success, message = delete_data('products', {'product_id': 'P001'})
             assert success
             assert message == ""
-            
-            # Verify deletion
+
+            # Xác minh việc xóa
             remaining_products, _ = load_data('products')
             assert len(remaining_products) == 1
             assert remaining_products[0]['product_id'] == 'P002'
-    
+
     def test_delete_nonexistent_record(self, temp_db):
-        """Test deleting non-existent record."""
+        """Kiểm tra xóa bản ghi không tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             success, message = delete_data('products', {'product_id': 'NONEXISTENT'})
-            # Should succeed even if no rows affected
+            # Nên thành công ngay cả khi không có hàng nào bị ảnh hưởng
             assert success
             assert message == ""
-    
+
     def test_delete_invalid_table(self, temp_db):
-        """Test deleting from non-existent table."""
+        """Kiểm tra xóa từ bảng không tồn tại."""
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             success, message = delete_data('nonexistent_table', {'id': 1})
             assert not success

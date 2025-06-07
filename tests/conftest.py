@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Pytest configuration and shared fixtures for the invoice management system.
+Cấu hình Pytest và fixtures chia sẻ cho hệ thống quản lý hóa đơn.
 
-This file provides pytest fixtures that are automatically available to all tests.
-Fixtures handle test setup, teardown, and provide common test dependencies like
-temporary databases and pre-configured manager instances.
+File này cung cấp các pytest fixtures tự động có sẵn cho tất cả tests.
+Fixtures xử lý thiết lập test, dỎn dẹp, và cung cấp các dependencies test chung như
+database tạm thời và các instance manager đã được cấu hình sẵn.
+
+Các fixtures chính:
+- temp_db: Tạo database SQLite tạm thời cho testing
+- product_manager: ProductManager instance với database test
+- populated_product_manager: ProductManager với dữ liệu mẫu
+
+Tất cả fixtures được tự động dỎn dẹp sau khi test hoàn thành.
 """
 
 import pytest
@@ -14,7 +21,7 @@ import os
 import sys
 from unittest.mock import patch
 
-# Add src to path for imports
+# Thêm src vào path để import
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from core.product_manager import ProductManager
@@ -24,26 +31,26 @@ from database.database import initialize_database
 
 @pytest.fixture
 def temp_db():
-    """Create a temporary database for testing."""
+    """Tạo database tạm thời để testing."""
     temp_db_fd, temp_db_path = tempfile.mkstemp(suffix='.db')
     os.close(temp_db_fd)
 
-    # Initialize the test database
+    # Khởi tạo test database
     with patch('database.database.DATABASE_PATH', temp_db_path):
         with patch('utils.db_utils.DATABASE_PATH', temp_db_path):
             success, message = initialize_database()
-            assert success, f"Failed to initialize test database: {message}"
+            assert success, f"Không thể khởi tạo test database: {message}"
 
             yield temp_db_path
 
-    # Clean up
+    # Dọn dẹp
     if os.path.exists(temp_db_path):
         os.unlink(temp_db_path)
 
 
 @pytest.fixture
 def product_manager(temp_db):
-    """Create a ProductManager instance with temporary database."""
+    """Tạo instance ProductManager với database tạm thời."""
     with patch('database.database.DATABASE_PATH', temp_db):
         with patch('utils.db_utils.DATABASE_PATH', temp_db):
             return ProductManager()
@@ -51,7 +58,7 @@ def product_manager(temp_db):
 
 @pytest.fixture
 def populated_product_manager(product_manager):
-    """ProductManager with sample products already added."""
+    """ProductManager với các sản phẩm mẫu đã được thêm sẵn."""
     sample_products = [
         {
             'product_id': 'P001',
@@ -71,5 +78,5 @@ def populated_product_manager(product_manager):
 
     for product_data in sample_products:
         success, message = product_manager.add_product(**product_data)
-        assert success, f"Failed to add product: {message}"
+        assert success, f"Không thể thêm sản phẩm: {message}"
     return product_manager

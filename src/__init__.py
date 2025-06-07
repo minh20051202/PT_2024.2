@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Gói chính của Hệ thống Quản lý Hóa đơn.
+
+Gói này chứa tất cả các module chính của ứng dụng quản lý hóa đơn
+bao gồm models, core logic, utilities, database và UI.
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Gói ứng dụng chính cho Hệ thống Quản lý Hóa đơn.
 """
 
