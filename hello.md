@@ -432,7 +432,7 @@ Testing là quá trình kiểm tra chương trình để đảm bảo nó hoạt
 Các loại testing: 1. Unit Testing: Kiểm tra các đơn vị nhỏ nhất của code (functions, methods, classes) một cách độc lập. 2. Integration Testing: Kiểm tra sự tương tác giữa các thành phần khi chúng được kết hợp với nhau. 3. System Testing: Kiểm tra toàn bộ hệ thống để đảm bảo nó đáp ứng các yêu cầu. 4. Acceptance Testing: Kiểm tra xem hệ thống có đáp ứng nhu cầu của người dùng không.
 Các kỹ thuật testing: 1. Manual Testing: Kiểm tra bằng tay, thực hiện các thao tác và kiểm tra kết quả. 2. Automated Testing: Sử dụng các công cụ và scripts để tự động hóa quá trình kiểm tra. 3. Test-Driven Development (TDD): Viết test trước, sau đó viết code để pass test. 4. Black-box Testing: Kiểm tra chức năng mà không cần biết cấu trúc bên trong. 5. White-box Testing: Kiểm tra dựa trên cấu trúc và logic bên trong của code.
 5.2.2 Application in the Program
-Hệ thống Quản lý Hóa đơn sử dụng pytest làm framework testing chính, với 104 tests và coverage 36%. Các loại test đã được triển khai:
+Hệ thống Quản lý Hóa đơn sử dụng pytest làm framework testing chính, với **143 tests** và **coverage 95%** trên các module cốt lõi. Các loại test đã được triển khai:
 1.	Unit Tests:
 o	Test cho các hàm validation
  	def test_validate_product_id_valid():

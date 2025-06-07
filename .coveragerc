@@ -1,0 +1,30 @@
+[run]
+source = 
+    src/core/
+    src/models/
+    src/utils/
+    src/database/
+omit = 
+    */site-packages/*
+    */dist-packages/*
+    /usr/*
+    /etc/*
+    */venv/*
+    */virtualenv/*
+    */__pycache__/*
+    */test*
+    */conftest.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
