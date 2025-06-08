@@ -968,14 +968,24 @@ class InvoiceAppGUI:
                 return
             
             # Hỏi người dùng về số lượng khách hàng hàng đầu muốn xem
-            limit = simpledialog.askinteger(
-                "Số lượng khách hàng", 
-                "Nhập số lượng khách hàng tiềm năng muốn xem:",
-                minvalue=1, maxvalue=20, initialvalue=5
-            )
-            
-            if limit is None:  # Người dùng đã hủy
-                return
+            while True:
+                limit = simpledialog.askinteger(
+                    "Số lượng khách hàng",
+                    "Nhập số lượng khách hàng tiềm năng muốn xem:",
+                    initialvalue=5
+                )
+
+                if limit is None:
+                    return
+
+                if limit <= 0:
+                    messagebox.showerror("Lỗi", "Số lượng khách hàng phải lớn hơn 0. Vui lòng thử lại.")
+                    continue
+                elif limit > 20:
+                    messagebox.showerror("Lỗi", "Số lượng khách hàng không được vượt quá 20. Vui lòng thử lại.")
+                    continue
+
+                break
                 
             # Thông báo đang xử lý
             self.customer_result.config(state="normal")
