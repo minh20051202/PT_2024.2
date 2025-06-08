@@ -525,7 +525,7 @@ class InvoiceAppGUI:
         
         # --- Phần thêm/xóa mặt hàng ---
         add_item_frame = ttk.LabelFrame(items_container_frame, text="Thao tác")
-        add_item_frame.pack(fill="x", side="bottom")
+        add_item_frame.pack(fill="x", side="bottom", pady=(5, 0))
 
         # Dropdown chọn sản phẩm
         ttk.Label(add_item_frame, text="Sản phẩm:", font=("Cambria", 12)).grid(row=0, column=0, padx=5, pady=5, sticky='w')
@@ -580,9 +580,16 @@ class InvoiceAppGUI:
             current_items[:] = [item for item in current_items if item['product_id'] != product_id]
             update_items_list()
 
-        ttk.Button(add_item_frame, text="Thêm", command=add_item).grid(row=0, column=4, padx=5, pady=5)
-        ttk.Button(add_item_frame, text="Xóa", command=remove_item).grid(row=0, column=5, padx=5, pady=5)
-        
+        # Nút thêm và xóa
+        button_container = ttk.Frame(add_item_frame)
+        button_container.grid(row=0, column=4, padx=10, pady=5)
+
+        ttk.Button(button_container, text="Thêm", command=add_item).pack(side="left", padx=2)
+        ttk.Button(button_container, text="Xóa", command=remove_item).pack(side="left", padx=2)
+
+        # Đảm bảo các cột có thể mở rộng
+        add_item_frame.grid_columnconfigure(1, weight=1)
+
         total_label.pack(pady=10, side='top')
 
         # --- Phần nút cuối cùng ---
@@ -1013,7 +1020,7 @@ class InvoiceAppGUI:
             self.customer_result.config(state="disabled")
             
             if not output.strip():
-                print("Cảnh báo: Output trống!")
+                print("Cảnh báo: Kết quả trống!")
                 
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể hiển thị thống kê khách hàng tiềm năng: {str(e)}")
