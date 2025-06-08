@@ -17,34 +17,42 @@ python3 src/main.py
 
 ## 📁 Cấu trúc dự án
 
-```
 PT_2024.2/
-├── src/                          # Mã nguồn chính
-│   ├── main.py                   # Entry point
-│   ├── models/                   # Data models
-│   │   ├── product.py            # Model sản phẩm
-│   │   └── invoice.py            # Model hóa đơn
-│   ├── core/                     # Business logic
-│   │   ├── product_manager.py    # Quản lý sản phẩm
-│   │   ├── invoice_manager.py    # Quản lý hóa đơn
-│   │   └── statistics_manager.py # Thống kê
-│   ├── database/                 # Database layer
-│   │   └── database.py           # SQLite setup
-│   │   └── invoicemanager.db.py  # SQLite database
-│   ├── utils/                    # Utilities
-│   │   ├── validation.py         # Input validation
-│   │   ├── formatting.py         # Data formatting
-│   │   ├── db_utils.py           # Database operations
-│   └── ui/                       # User interface
-│       └── gui.py                # Tkinter GUI
-├── tests/                        # Test suite
-│   ├── unit/                     # Unit tests
-│   ├── integration/              # Integration tests
-│   ├── conftest.py               # Pytest fixtures
-│   └── test_helpers.py           # Test utilities
-└── requirements.txt              # Python dependencies
-└── README.md                     # Documentation
-```
+├── src/
+│   ├── main.py                    # Điểm bắt đầu chương trình
+│   ├── models/                    # Mô hình dữ liệu
+│   │   ├── product.py             # Mô hình sản phẩm
+│   │   └── invoice.py             # Mô hình hoá đơn
+│   ├── core/                      # Logic nghiệp vụ
+│   │   ├── product_manager.py     # Quản lý sản phẩm
+│   │   ├── invoice_manager.py     # Quản lý hoá đơn
+│   │   └── statistics_manager.py  # Thống kê
+│   ├── database/                  # Tầng cơ sở dữ liệu
+│   │   ├── database.py            # Thiết lập SQLite
+│   │   └── invoicemanager.db.py   # Cơ sở dữ liệu SQLite
+│   ├── utils/                     # Tiện ích hỗ trợ
+│   │   ├── validation.py          # Kiểm tra đầu vào
+│   │   ├── formatting.py          # Định dạng dữ liệu
+│   │   └── db_utils.py            # Tác vụ cơ sở dữ liệu
+│   └── ui/                        # Giao diện người dùng
+│       └── gui.py                 # Giao diện Tkinter
+├── tests/                         # Bộ kiểm thử
+│   ├── unit/                      # Kiểm thử đơn vị
+│   │   ├── test_db_utils.py       # Test tiện ích cơ sở dữ liệu
+│   │   ├── test_formatting.py     # Test định dạng dữ liệu
+│   │   ├── test_invoice_manager.py # Test quản lý hóa đơn
+│   │   ├── test_invoice_model.py  # Test mô hình hóa đơn
+│   │   ├── test_product_manager.py # Test quản lý sản phẩm
+│   │   ├── test_product_model.py  # Test mô hình sản phẩm
+│   │   ├── test_statistics_manager.py # Test thống kê
+│   │   └── test_validation.py     # Test kiểm tra đầu vào
+│   ├── integration/               # Kiểm thử tích hợp
+│   │   └── test_main_workflow.py  # Test luồng chính
+│   ├── conftest.py                # Thiết lập pytest fixtures
+│   └── test_helpers.py            # Tiện ích kiểm thử
+├── .coveragerc                    # Cấu hình coverage.py
+├── requirements.txt               # Thư viện phụ thuộc
+└── README.md                      # Tài liệu hướng dẫn
 
 ## 💻 Sử dụng
 
