@@ -43,7 +43,7 @@ class ProductManager:
         return True, f"Đã tải {len(self.products)} sản phẩm từ database."
 
     def add_product(self, product_id: str, name: str, unit_price: float,
-                   calculation_unit: str = "đơn vị", category: str = "General") -> tuple[bool, str]:
+                   calculation_unit: str = "đơn vị", category: str = "Chung") -> tuple[bool, str]:
         """Thêm một sản phẩm mới vào database."""
         # Xác thực đầu vào
         valid, error = validate_product_id(product_id)

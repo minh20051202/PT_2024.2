@@ -61,7 +61,7 @@ class TestProductManager:
 
         product = product_manager.find_product('P002')
         assert product.calculation_unit == 'đơn vị'
-        assert product.category == 'General'
+        assert product.category == 'Chung'
 
     def test_add_product_empty_id(self, product_manager):
         """Kiểm tra thêm sản phẩm với ID rỗng."""

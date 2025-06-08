@@ -27,4 +27,4 @@ class TestAssertions:
         assert actual.name == expected['name']
         assert actual.unit_price == expected['unit_price']
         assert actual.calculation_unit == expected.get('calculation_unit', 'đơn vị')
-        assert actual.category == expected.get('category', 'General')
+        assert actual.category == expected.get('category', 'Chung')

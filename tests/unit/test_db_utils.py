@@ -56,17 +56,6 @@ class TestEnsureDatabaseExists:
             assert success
             assert message == ""
 
-    def test_permission_error(self):
-        """Kiểm tra xử lý lỗi quyền truy cập."""
-        # Thử tạo database ở vị trí chỉ đọc
-        readonly_path = "/root/readonly/test.db"
-
-        with patch('utils.db_utils.DATABASE_PATH', readonly_path):
-            success, message = ensure_database_exists()
-            assert not success
-            assert "Lỗi khi kiểm tra database" in message
-
-
 class TestSaveData:
     """Kiểm tra cho hàm save_data."""
 

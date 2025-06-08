@@ -52,7 +52,7 @@ class TestProductModel:
         assert product.name == "Chuột không dây"
         assert product.unit_price == 500000.0
         assert product.calculation_unit == "đơn vị"  # Giá trị mặc định
-        assert product.category == "General"  # Giá trị mặc định
+        assert product.category == "Chung"  # Giá trị mặc định
 
     def test_product_creation_minimal(self):
         """Kiểm tra tạo Product với dữ liệu tối thiểu cần thiết."""

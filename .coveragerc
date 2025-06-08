@@ -9,12 +9,10 @@ omit =
     */dist-packages/*
     /usr/*
     /etc/*
-    */venv/*
-    */virtualenv/*
     */__pycache__/*
     */test*
     */conftest.py
-
+    */__init__.py
 [report]
 exclude_lines =
     pragma: no cover

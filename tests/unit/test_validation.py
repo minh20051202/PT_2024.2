@@ -17,8 +17,6 @@ from utils.validation import (
     validate_required_field,
     validate_string_length,
     validate_date_format,
-    validate_email,
-    validate_phone_number,
     validate_product_id,
     validate_quantity
 )
@@ -33,7 +31,7 @@ class TestValidatePositiveNumber:
             (10.5, "Price"),
             (0.01, "Small amount"),
             (1000000, "Large amount"),
-            ("123.45", "String number")  # Nên chuyển đổi thành float
+            ("123.45", "String number")
         ]
 
         for value, field_name in test_cases:
@@ -207,76 +205,6 @@ class TestValidateDateFormat:
             valid, error = validate_date_format(date_str, "Test field", format_str)
             assert not valid, f"Mong đợi '{date_str}' không hợp lệ"
             assert format_str in error
-
-
-class TestValidateEmail:
-    """Kiểm tra cho hàm validate_email."""
-
-    def test_valid_emails(self):
-        """Kiểm tra với các địa chỉ email hợp lệ."""
-        valid_emails = [
-            "test@example.com",
-            "user.name@domain.co.uk",
-            "user+tag@example.org",
-            "123@test.com",
-            "a@b.co"
-        ]
-
-        for email in valid_emails:
-            valid, error = validate_email(email)
-            assert valid, f"Mong đợi '{email}' hợp lệ"
-            assert error == ""
-
-    def test_invalid_emails(self):
-        """Kiểm tra với các địa chỉ email không hợp lệ."""
-        invalid_emails = [
-            "invalid-email",
-            "@example.com",
-            "test@",
-            "test.example.com",
-            "test@.com",
-            "",
-            "test@example"
-        ]
-
-        for email in invalid_emails:
-            valid, error = validate_email(email)
-            assert not valid, f"Mong đợi '{email}' không hợp lệ"
-            assert "không hợp lệ" in error
-
-
-class TestValidatePhoneNumber:
-    """Kiểm tra cho hàm validate_phone_number."""
-
-    def test_valid_phone_numbers(self):
-        """Kiểm tra với các số điện thoại Việt Nam hợp lệ."""
-        valid_phones = [
-            "0912345678",
-            "0987654321",
-            "0356789012",
-            "0798765432"
-        ]
-
-        for phone in valid_phones:
-            valid, error = validate_phone_number(phone)
-            assert valid, f"Mong đợi '{phone}' hợp lệ"
-            assert error == ""
-
-    def test_invalid_phone_numbers(self):
-        """Kiểm tra với các số điện thoại không hợp lệ."""
-        invalid_phones = [
-            "123456789",  # Quá ngắn
-            "01234567890",  # Quá dài
-            "0123456789",  # Tiền tố không hợp lệ
-            "abc1234567",  # Chứa chữ cái
-            "",
-            "84912345678"  # Định dạng quốc tế
-        ]
-
-        for phone in invalid_phones:
-            valid, error = validate_phone_number(phone)
-            assert not valid, f"Mong đợi '{phone}' không hợp lệ"
-            assert "không hợp lệ" in error
 
 
 class TestValidateProductId:

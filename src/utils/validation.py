@@ -7,7 +7,7 @@ Module này cung cấp các hàm validation để kiểm tra tính hợp lệ c�
 dữ liệu đầu vào trong toàn bộ ứng dụng. Bao gồm kiểm tra:
 - Số dương và trường bắt buộc
 - Độ dài chuỗi và định dạng ngày tháng
-- Email, số điện thoại và mã sản phẩm
+- Mã sản phẩm
 - Số lượng sản phẩm
 
 Tất cả hàm trả về tuple (bool, str) với thông báo lỗi tiếng Việt.
@@ -91,36 +91,6 @@ def validate_date_format(date_str: str, field_name: str, format: str = "%Y-%m-%d
         return True, ""
     except ValueError:
         return False, f"{field_name} phải có định dạng {format}."
-
-def validate_email(email: str) -> Tuple[bool, str]:
-    """
-    Kiểm tra định dạng email.
-
-    Tham số:
-        email: Email cần kiểm tra
-
-    Trả về:
-        Tuple[bool, str]: (True/False, thông báo lỗi nếu có)
-    """
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(pattern, email):
-        return False, "Email không hợp lệ."
-    return True, ""
-
-def validate_phone_number(phone: str) -> Tuple[bool, str]:
-    """
-    Kiểm tra định dạng số điện thoại Việt Nam.
-
-    Tham số:
-        phone: Số điện thoại cần kiểm tra
-
-    Trả về:
-        Tuple[bool, str]: (True/False, thông báo lỗi nếu có)
-    """
-    pattern = r'^(0[3|5|7|8|9])+([0-9]{8})$'
-    if not re.match(pattern, phone):
-        return False, "Số điện thoại không hợp lệ."
-    return True, ""
 
 def validate_product_id(product_id: str) -> Tuple[bool, str]:
     """

@@ -20,14 +20,14 @@ class Product:
         product_id (str): Định danh duy nhất cho sản phẩm
         name (str): Tên sản phẩm
         unit_price (float): Giá mỗi đơn vị
-        category (str): Danh mục sản phẩm (mặc định: "General")
+        category (str): Danh mục sản phẩm (mặc định: "Chung")
         calculation_unit (str): Đơn vị tính (mặc định: "đơn vị")
     """
     product_id: str
     name: str
     unit_price: float
     calculation_unit: str = field(default="đơn vị")
-    category: str = field(default="General")
+    category: str = field(default="Chung")
     
     def __post_init__(self):
         """Xác thực dữ liệu sản phẩm."""
