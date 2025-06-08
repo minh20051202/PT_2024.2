@@ -1,8 +1,8 @@
 # Chương trình Quản lý Hóa đơn
 
-Chương trình quản lý hóa đơn được xây dựng bằng Python với kiến trúc sạch, giao diện thân thiện và độ phủ test cao. Ứng dụng hỗ trợ quản lý sản phẩm, tạo hóa đơn và thống kê doanh thu cho doanh nghiệp vừa và nhỏ.
+Chương trình quản lý hóa đơn cho phép quản lý sản phẩm, tạo hóa đơn và thống kê doanh thu.
 
-## Cài đặt nhanh
+## Cài đặt
 
 ```bash
 # 1. Clone repository
@@ -54,17 +54,16 @@ PT_2024.2/
 ├── requirements.txt               # Thư viện phụ thuộc
 └── README.md                      # Tài liệu hướng dẫn
 
-## 💻 Sử dụng
+## Cài đặt dependencies
+```bash
+pip install -r requirements.txt
+```
+
+## Sử dụng
 
 ### Chạy ứng dụng
 ```bash
-python3 src/main.py              # Giao diện GUI
-```
-
-## 🧪 Testing
-```bash
-# Cài đặt dependencies cho testing
-pip install pytest pytest-cov
+python3 src/main.py
 ```
 
 ### Chạy tests
