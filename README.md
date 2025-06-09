@@ -13,8 +13,6 @@ cd PT_2024.2
 python3 src/main.py
 ```
 
-**Yêu cầu**: Python 3.8+ (chỉ sử dụng thư viện có sẵn)
-
 ## 📁 Cấu trúc dự án
 
 PT_2024.2/
